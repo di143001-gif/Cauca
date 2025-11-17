@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cắm Câu — WebGame</title>
+<style>
+  :root{
+    --bg:#0b2a2f;
+    --bank:#6b5e3c;
+    --water:#0b4f73;
+    --panel:#0f1f2a;
+    --accent:#ffd166;
+    --muted:#9aa8b2;
+    font-family:Segoe UI, Roboto, Arial, sans-serif;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(#071a22,#07242b);display:flex;align-items:center;justify-content:center;}
+  #gamewrap{width:100%;max-width:900px;height:100%;max-height:1600px;background:linear-gradient(#08323b,#052028);box-shadow:0 10px 40px rgba(0,0,0,.6);position:relative;border-radius:8px;overflow:hidden;}
+  canvas{display:block;background:transparent;width:100%;height:calc(100% - 180px);}
+  #ui{position:absolute;left:0;right:0;bottom:0;height:180px;background:var(--panel);color:white;padding:12px;box-sizing:border-box;display:flex;gap:12px;align-items:flex-start;}
+  .col{flex:1;display:flex;flex-direction:column;gap:8px;}
+  .left{flex:0 0 320px;}
+  .btn{background:var(--accent);color:#042028;padding:8px 12px;border-radius:6px;border:0;font-weight:700;cursor:pointer}
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,.08);color:var(--muted);font-weight:600}
+  .small{font-size:12px;color:var(--muted)}
+  .panel{background:rgba(255,255,255,.03);padding:8px;border-radius:6px;min-height:40px;display:flex;flex-direction:column;gap:6px;}
+  .rod-list{display:flex;gap:6px;flex-wrap:wrap}
+  .rod{background:rgba(255,255,255,.02);padding:6px;border-radius:6px;min-width:90px;text-align:center;cursor:pointer}
+  .rod.active{outline:2px solid var(--accent)}
+  #message{position:absolute;left:50%;transform:translateX(-50%);top:16px;background:rgba(0,0,0,.6);padding:8px 12px;border-radius:8px;color:var(--accent);font-weight:700}
+  #popup{position:absolute;left:50%;transform:translateX(-50%);top:70px;background:linear-gradient(#0a1b2a,#061218);color:white;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.06);display:none;min-width:260px}
+  #popup h3{margin:0 0 6px 0}
+  #footerline{font-size:12px;color:var(--muted);margin-top:6px}
+  @media (max-width:640px){
+    #ui{flex-direction:column;height:260px}
+    canvas{height:calc(100% - 260px)}
+    .left{flex-basis:100%}
+  }
+</style>
+</head>
+<body>
+<div id="gamewrap">
+  <canvas id="c"></canvas>
+  <div id="message">Chào ngư phủ!</div>
+  <div id="popup"></div>
+  <div id="ui">
+    <div class="col left">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:800;font-size:18px">Ngư Phủ</div>
+          <div class="small" id="timeLabel">—</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:800;color:var(--accent)" id="coins">0 Xu</div>
+          <div class="small" id="level">Lv 1</div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="small">Đang cắm</div>
+          <div class="small" id="castInfo">0/0</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn" id="btnCast">Cắm cần</button>
+          <button class="btn secondary" id="btnCollect">Thu cá</button>
+          <button class="btn secondary" id="btnSell">Bán</button>
+        </div>
+        <div id="footerline">Giao diện 2D góc nghiêng. Cá chỉ xuất hiện khi dính.</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700">Cần câu</div>
+          <div class="small">Chọn / Nâng cấp</div>
+        </div>
+        <div class="rod-list" id="rodList"></div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn" id="btnUpgrade">Nâng cấp</button>
+          <button class="btn secondary" id="btnBuy">Mua cần sắt (10k)</button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700">Kho cá</div>
+          <div class="small" id="fishSummary">0 con</div>
+        </div>
+        <div id="inventory" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
+      </div>
+    </div>
+
+    <div class="col" style="flex:0 0 220px">
+      <div class="panel">
+        <div style="font-weight:700">Sự kiện & Thông tin</div>
+        <div class="small" id="eventBox">Không có sự kiện</div>
+        <div style="margin-top:8px">
+          <button class="btn" id="btnToggleDay">Bật/Tắt Ngày</button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:8px">
+        <div style="font-weight:700">Lưu/Khôi phục</div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn secondary" id="btnSave">Lưu</button>
+          <button class="btn secondary" id="btnLoad">Tải</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+  WebGame: Cắm Câu (HTML5 Canvas)
+  - Single-file game
+  - Save using localStorage
+  - Features: cast rod, chance to catch, popup with fish info (type, rarity, kg, price),
+              sell fish, upgrade rod, day/night fish spawn differences
+  - Responsive canvas
+*/
+
+/* ---------- CONFIG ---------- */
+const CONFIG = {
+  width: 1080,
+  height: 620,
+  baseCoins: 1000,
+  fishPricePerKg: {"Cá Lóc":100, "Cá Vàng":200, "Cá Hiếm":1000},
+  rodTemplates: [
+    {name:"Cần Tre", baseRate:0.0005, baseExp:0.0, baseTime:30, baseCost:100, buyPrice: null},
+    {name:"Cần Sắt", baseRate:0.005, baseExp:0.1, baseTime:60, baseCost:200, buyPrice:10000}
+  ],
+  upgradeMultiplier: 2,
+  maxRods: 6
+};
+
+/* ---------- STATE ---------- */
+let state = {
+  coins: 0,
+  level:1,
+  exp:0,
+  rods: [], // {id, name, level, status, castTimeLeft, totalTime}
+  selectedRodId: 0,
+  fishInventory: [], // {id,name,weight,price}
+  isDay: true,
+  event: null,
+  message: "",
+};
+
+/* ---------- UTIL ---------- */
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function rand(min,max){ return min + Math.random()*(max-min); }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+/* ---------- INIT DEFAULTS ---------- */
+function createDefaultRod(id, templateIdx=0){
+  const t = CONFIG.rodTemplates[templateIdx];
+  return {id,templateIdx,name:t.name,level:1,status:"idle",castStart:0,castDuration:t.baseTime,totalBonusRate:0,totalBonusTime:0};
+}
+
+function init(){
+  // load if exists
+  const s = localStorage.getItem("caucaf_state_v1");
+  if(s){
+    try{ state = JSON.parse(s); }
+    catch(e){ console.warn("load err",e); setupNew(); }
+  } else setupNew();
+
+  // ensure rods
+  if(!state.rods || state.rods.length===0){
+    state.rods = [];
+    for(let i=0;i<3;i++) state.rods.push(createDefaultRod(i,i<2?i:0));
+  }
+  renderUI();
+  loop();
+}
+
+function setupNew(){
+  state.coins = CONFIG.baseCoins;
+  state.level = 1;
+  state.exp = 0;
+  state.rods = [createDefaultRod(0,0), createDefaultRod(1,1)];
+  state.selectedRodId = 0;
+  state.fishInventory = [];
+  state.isDay = true;
+  state.event = null;
+  saveState();
+}
+
+/* ---------- SAVE / LOAD ---------- */
+function saveState(){
+  localStorage.setItem("caucaf_state_v1", JSON.stringify(state));
+  showMessage("Đã lưu trò chơi");
+}
+function loadState(){
+  const s = localStorage.getItem("caucaf_state_v1");
+  if(s){ state = JSON.parse(s); showMessage("Đã tải trạng thái"); renderUI(); }
+  else showMessage("Không có dữ liệu lưu");
+}
+
+/* ---------- GAME LOGIC ---------- */
+function getRodRate(rod){
+  const t = CONFIG.rodTemplates[rod.templateIdx];
+  const base = t.baseRate + (rod.level-1)*t.levelRate || t.baseRate;
+  // include upgrades
+  const total = (t.baseRate + (rod.level-1)*(t.baseRate*0.5)) + (rod.totalBonusRate||0);
+  return total;
+}
+function getRodCastTime(rod){
+  const t = CONFIG.rodTemplates[rod.templateIdx];
+  return t.baseTime + (rod.totalBonusTime||0);
+}
+
+function tryStartCast(rod){
+  if(rod.status==="casting") return showMessage("Cần đang cắm");
+  rod.status = "casting";
+  rod.castStart = Date.now();
+  rod.castDuration = getRodCastTime(rod) * 60 * 1000; // minutes -> ms
+  showMessage("Đã cắm cần");
+  renderUI();
+}
+function collectRod(rod){
+  if(rod.status!=="caught" && rod.status!=="casting") return showMessage("Không có gì để thu");
+  if(rod.status==="caught" && rod.catchData){
+    // add fish
+    state.fishInventory.push(rod.catchData);
+    showPopupCatch(rod.catchData);
+    rod.catchData = null;
+  }
+  rod.status = "idle";
+  renderUI();
+  saveState();
+}
+function forceCheckAll(){
+  // called each tick: check casting rods and determine catches
+  const now = Date.now();
+  for(let rod of state.rods){
+    if(rod.status==="casting"){
+      // we simplify: compute probability per minute -> compute chance over elapsed minutes
+      const elapsed = now - rod.castStart;
+      const castMs = rod.castDuration;
+      const tTemplate = CONFIG.rodTemplates[rod.templateIdx];
+      const locRate = state.isDay ? 0.15 : 0.08; // base environment rate / minute
+      const rodRate = tTemplate.baseRate + (rod.level-1) * (tTemplate.baseRate*1.0);
+      const eventMult = (state.event && state.event.type==="boost_rate") ? 1.5 : 1.0;
+
+      // probability to catch within elapsed period:
+      const minutes = Math.floor(elapsed / 60000);
+      if(minutes <= 0) continue;
+      const totalRatePerMin = clamp(locRate + rodRate + (rod.totalBonusRate||0), 0, 1) * eventMult;
+      const chanceNoFish = Math.pow(1 - totalRatePerMin, minutes);
+      if(Math.random() > chanceNoFish){
+        // caught
+        const weight = state.isDay ? (Math.random()**2)*3 + 0.1 : (Math.random()**3)*2 + 0.1;
+        const name = pickFishByTime();
+        const id = uid();
+        const pricePerKg = CONFIG.fishPricePerKg[name] || 100;
+        const fishObj = {id,name,weight:parseFloat(weight.toFixed(2)),price:Math.round(pricePerKg*weight)};
+        rod.catchData = fishObj;
+        rod.status = "caught";
+        showMessage(`Dính ${name} ${fishObj.weight} kg!`);
+        // stop casting (player must collect)
+      }else{
+        // if cast duration exceeded -> ended (no catch)
+        if(elapsed >= castMs){
+          rod.status = "idle";
+          showMessage("Hết giờ cắm, không có gì");
+        }
+      }
+    }
+  }
+}
+
+function pickFishByTime(){
+  // simple rarity pool; day has higher chance cá thường, night has rare chance
+  const poolDay = [
+    {name:"Cá Lóc", weight:0.7},
+    {name:"Cá Vàng", weight:0.25},
+    {name:"Cá Hiếm", weight:0.05}
+  ];
+  const poolNight = [
+    {name:"Cá Lóc", weight:0.55},
+    {name:"Cá Vàng", weight:0.30},
+    {name:"Cá Hiếm", weight:0.15}
+  ];
+  const pool = state.isDay ? poolDay : poolNight;
+  const r = Math.random();
+  let acc = 0;
+  for(let p of pool){ acc += p.weight; if(r <= acc) return p.name; }
+  return pool[0].name;
+}
+
+/* ---------- UI & RENDER ---------- */
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+function resizeCanvas(){
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+}
+window.addEventListener("resize", ()=>{ resizeCanvas(); drawScene(); });
+
+function drawScene(){
+  // clear
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  ctx.clearRect(0,0,w,h);
+
+  // draw river perspective (simple isometric-ish)
+  const riverTop = h*0.18, riverBottom = h*0.88;
+  // bank left
+  ctx.fillStyle = "#6b5e3c";
+  ctx.fillRect(0,riverBottom-40,w*0.25,40);
+  // river
+  const grad = ctx.createLinearGradient(0,riverTop,0,riverBottom);
+  grad.addColorStop(0, state.isDay ? "#0b7aa8" : "#02243a");
+  grad.addColorStop(1, state.isDay ? "#035f85" : "#00142a");
+  ctx.fillStyle = grad;
+  // draw simple trapezoid for perspective
+  ctx.beginPath();
+  ctx.moveTo(0,riverBottom);
+  ctx.lineTo(0,riverTop + 20);
+  ctx.lineTo(w,riverTop);
+  ctx.lineTo(w,riverBottom);
+  ctx.closePath();
+  ctx.fill();
+
+  // bank on right
+  ctx.fillStyle = "#3a2f22";
+  ctx.fillRect(w*0.8,riverBottom-40,w*0.2,40);
+
+  // player (left bank)
+  const px = 60, py = riverBottom - 80;
+  drawPlayer(px,py);
+
+  // rods and bobbers
+  state.rods.forEach((rod, idx)=>{
+    const sx = 160 + idx*80;
+    const sy = riverTop + (idx%2)*20;
+    // line
+    ctx.strokeStyle = rod.status==="casting" ? "#ffd166" : "#999";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(px+24,py-10);
+    ctx.lineTo(sx,sy+10);
+    ctx.stroke();
+    // bobber
+    ctx.beginPath();
+    ctx.fillStyle = rod.status==="caught" ? "#ff4d4d" : "#fff";
+    ctx.arc(sx,sy+10,8,0,Math.PI*2);
+    ctx.fill();
+    // label
+    ctx.fillStyle = "white";
+    ctx.font = "12px Roboto";
+    ctx.fillText(rod.name + " Lv"+rod.level, sx-30, sy-10);
+    if(rod.status==="casting"){
+      ctx.fillStyle = "rgba(255,255,255,.6)";
+      ctx.fillText("Đang cắm", sx-26, sy+32);
+    } else if(rod.status==="caught"){
+      ctx.fillStyle = "#ffd166";
+      ctx.fillText("Đã dính!", sx-26, sy+32);
+    }
+  });
+
+  // floating fishes (inventory preview small)
+  let ix = 10;
+  state.fishInventory.slice(0,8).forEach(f=>{
+    ctx.fillStyle = "#ffa";
+    ctx.fillRect(ix,10,40,18);
+    ctx.fillStyle="#053";
+    ctx.fillText(`${f.name} ${f.weight}kg`, ix+2, 22);
+    ix += 46;
+  });
+}
+
+function drawPlayer(x,y){
+  // simple character: circle head + body
+  ctx.fillStyle = "#ffd166"; ctx.beginPath(); ctx.arc(x+6,y-30,10,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = "#444"; ctx.fillRect(x-6,y-20,28,32);
+}
+
+/* ---------- UI RENDER ---------- */
+function renderUI(){
+  document.getElementById("coins").textContent = `${state.coins} Xu`;
+  document.getElementById("level").textContent = `Lv ${state.level}`;
+  document.getElementById("timeLabel").textContent = state.isDay ? "Ban ngày" : "Ban đêm";
+  document.getElementById("castInfo").textContent = `${state.rods.filter(r=>r.status==="casting").length}/${state.rods.length}`;
+  document.getElementById("eventBox").textContent = state.event ? `${state.event.name}` : "Không có sự kiện";
+  // rod list
+  const rl = document.getElementById("rodList"); rl.innerHTML="";
+  state.rods.forEach(r=>{
+    const el = document.createElement("div");
+    el.className = "rod" + (r.id===state.selectedRodId ? " active":"");
+    el.innerHTML = `<div style="font-weight:700">${r.name}</div><div class="small">Lv ${r.level}</div>`;
+    el.addEventListener("click", ()=>{ state.selectedRodId = r.id; renderUI(); });
+    rl.appendChild(el);
+  });
+  // inventory
+  const inv = document.getElementById("inventory"); inv.innerHTML="";
+  state.fishInventory.forEach(f=>{
+    const e = document.createElement("div");
+    e.className = "rod";
+    e.style.minWidth = "160px";
+    e.innerHTML = `<div style="font-weight:700">${f.name}</div><div class="small">${f.weight} kg — ${f.price} Xu</div><div style="margin-top:6px;display:flex;gap:6px"><button class="btn secondary" onclick="sellSingle('${f.id}')">Bán</button></div>`;
+    inv.appendChild(e);
+  });
+  document.getElementById("fishSummary").textContent = `${state.fishInventory.length} con (${state.fishInventory.reduce((s,x)=>s+x.weight,0).toFixed(2)} kg)`;
+  resizeCanvas();
+  drawScene();
+}
+
+/* ---------- POPUPS & MESSAGES ---------- */
+function showMessage(txt,timeout=2500){
+  const el = document.getElementById("message");
+  el.textContent = txt; el.style.opacity = "1";
+  setTimeout(()=>{ el.style.opacity = "0"; }, timeout);
+}
+function showPopupCatch(fish){
+  const popup = document.getElementById("popup");
+  popup.style.display = "block";
+  popup.innerHTML = `<h3>Đã bắt được ${fish.name}</h3>
+    <div>Trọng lượng: <b>${fish.weight} kg</b></div>
+    <div>Giá thị trường: <b>${fish.price} Xu</b></div>
+    <div style="margin-top:8px;display:flex;gap:6px">
+      <button class="btn" onclick="sellById('${fish.id}')">Bán luôn</button>
+      <button class="btn secondary" onclick="closePopup()">Giữ</button>
+    </div>`;
+  setTimeout(()=>{ popup.style.display="none"; }, 6000);
+}
+function closePopup(){ document.getElementById("popup").style.display="none"; }
+
+/* ---------- ACTIONS ---------- */
+document.getElementById("btnCast").addEventListener("click", ()=>{
+  const rod = state.rods.find(r=>r.id===state.selectedRodId);
+  if(!rod) return showMessage("Chọn cần trước");
+  tryStartCast(rod);
+  renderUI();
+  saveState();
+});
+document.getElementById("btnCollect").addEventListener("click", ()=>{
+  const rod = state.rods.find(r=>r.id===state.selectedRodId);
+  if(!rod) return;
+  collectRod(rod);
+  renderUI();
+});
+document.getElementById("btnUpgrade").addEventListener("click", ()=>{
+  const rod = state.rods.find(r=>r.id===state.selectedRodId);
+  if(!rod) return;
+  const template = CONFIG.rodTemplates[rod.templateIdx];
+  const cost = Math.round(template.baseCost * Math.pow(CONFIG.upgradeMultiplier, rod.level-1));
+  if(state.coins < cost) return showMessage(`Cần ${cost} Xu để nâng cấp`);
+  state.coins -= cost; rod.level++; rod.totalBonusRate = (rod.totalBonusRate||0) + 0.002; rod.totalBonusTime = (rod.totalBonusTime||0)+1;
+  showMessage(`Nâng cấp thành công Lv ${rod.level}`);
+  renderUI(); saveState();
+});
+document.getElementById("btnBuy").addEventListener("click", ()=>{
+  const price = CONFIG.rodTemplates[1].buyPrice;
+  if(state.coins < price) return showMessage("Không đủ Xu");
+  if(state.rods.length >= CONFIG.maxRods) return showMessage("Đã đạt tối đa cần");
+  state.coins -= price;
+  const id = state.rods.length? Math.max(...state.rods.map(r=>r.id))+1 : 0;
+  state.rods.push(createDefaultRod(id,1));
+  showMessage("Đã mua Cần Sắt");
+  renderUI(); saveState();
+});
+document.getElementById("btnSell").addEventListener("click", ()=>{
+  // sell all for merchant price (slightly lower)
+  if(state.fishInventory.length===0) return showMessage("Không có cá để bán");
+  const total = state.fishInventory.reduce((s,f)=>s + Math.round(f.price*0.9),0);
+  state.coins += total;
+  const sold = state.fishInventory.length;
+  state.fishInventory=[];
+  showMessage(`Đã bán ${sold} con, nhận ${total} Xu`);
+  renderUI(); saveState();
+});
+document.getElementById("btnToggleDay").addEventListener("click", ()=>{ state.isDay = !state.isDay; renderUI(); saveState(); });
+
+document.getElementById("btnSave").addEventListener("click", ()=> saveState());
+document.getElementById("btnLoad").addEventListener("click", ()=> loadState());
+
+function sellSingle(id){
+  const idx = state.fishInventory.findIndex(f=>f.id===id);
+  if(idx===-1) return showMessage("Không tìm thấy");
+  const f = state.fishInventory[idx];
+  state.coins += f.price;
+  state.fishInventory.splice(idx,1);
+  showMessage(`Đã bán ${f.name} - ${f.price} Xu`);
+  renderUI(); saveState();
+}
+function sellById(id){
+  sellSingle(id);
+  closePopup();
+}
+
+/* ---------- GAME LOOP ---------- */
+let lastTick = 0;
+function loop(ts){
+  if(!lastTick) lastTick = ts || performance.now();
+  const dt = (ts || performance.now()) - lastTick;
+  lastTick = ts || performance.now();
+
+  // periodic checks
+  tryStartAutoEvent(dt);
+  forceCheckAll();
+  renderUI();
+
+  requestAnimationFrame(loop);
+}
+function tryStartAutoEvent(dt){
+  // random event: every ~2 minutes chance
+  if(!state._eventTimer) state._eventTimer = 0;
+  state._eventTimer += dt;
+  if(!state.event && state._eventTimer > 60000){ // check every 60s
+    state._eventTimer = 0;
+    if(Math.random() < 0.12){
+      state.event = {name:"Ngày Hội EXP", type:"boost_exp", duration:5*60*1000, start:Date.now()};
+      showMessage("SỰ KIỆN: Ngày Hội EXP (5 phút)");
+      setTimeout(()=>{ state.event = null; }, 5*60*1000);
+    }
+  }
+}
+
+/* ---------- START ---------- */
+init();
+
+/* ---------- Extras: keyboard shortcuts ---------- */
+window.addEventListener("keydown", e=>{
+  if(e.key==='c') document.getElementById("btnCast").click();
+  if(e.key==='x') document.getElementById("btnCollect").click();
+});
+</script>
+
+</body>
+</html>
