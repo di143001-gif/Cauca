@@ -2,37 +2,44 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cắm Câu Cá Lóc</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
             font-family: 'Arial', sans-serif;
         }
         
         body {
             background-color: #0a640a;
             color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            overflow-x: hidden;
+            padding: 0;
+            margin: 0;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
         
         #game-container {
             width: 100%;
-            max-width: 800px;
+            height: 100vh;
+            max-width: 100%;
             background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+            position: relative;
         }
         
         .screen {
             display: none;
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            overflow-y: auto;
         }
         
         .active {
@@ -45,42 +52,48 @@
             color: #ffc800;
         }
         
-        .stats {
+        .stats-bar {
             display: flex;
             justify-content: space-between;
             margin-bottom: 15px;
             background-color: rgba(50, 50, 50, 0.8);
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 10px;
+            font-size: 14px;
         }
         
         .stat-item {
             text-align: center;
+            flex: 1;
         }
         
         .button {
             display: block;
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
+            padding: 16px;
+            margin: 12px 0;
             background-color: #ffc800;
             color: black;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
         
-        .button:hover {
-            background-color: #e6b400;
+        .button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .button:disabled {
             background-color: #646464;
             color: #aaa;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
         .button.red {
@@ -88,17 +101,9 @@
             color: white;
         }
         
-        .button.red:hover {
-            background-color: #a60000;
-        }
-        
         .button.blue {
             background-color: #0046a0;
             color: white;
-        }
-        
-        .button.blue:hover {
-            background-color: #003580;
         }
         
         .button.green {
@@ -106,17 +111,9 @@
             color: white;
         }
         
-        .button.green:hover {
-            background-color: #085008;
-        }
-        
         .button.market {
             background-color: #b4b400;
             color: white;
-        }
-        
-        .button.market:hover {
-            background-color: #9a9a00;
         }
         
         .button.christmas {
@@ -124,21 +121,20 @@
             color: white;
         }
         
-        .button.christmas:hover {
-            background-color: #e00000;
-        }
-        
         .message {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.9);
             padding: 20px;
             border-radius: 10px;
             text-align: center;
             z-index: 100;
             display: none;
+            width: 80%;
+            max-width: 300px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
         }
         
         .message.active {
@@ -157,6 +153,7 @@
         .progress-fill {
             height: 100%;
             border-radius: 10px;
+            transition: width 0.3s;
         }
         
         .hp-bar .progress-fill {
@@ -169,7 +166,7 @@
         
         .rod-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             margin: 15px 0;
         }
@@ -177,10 +174,14 @@
         .rod-slot {
             background-color: #0046a0;
             border: 2px solid white;
-            border-radius: 5px;
-            padding: 10px;
+            border-radius: 10px;
+            padding: 12px;
             text-align: center;
             cursor: pointer;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .rod-slot.inactive {
@@ -192,19 +193,20 @@
         }
         
         .location-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             margin: 15px 0;
         }
         
         .location-slot {
             background-color: #0046a0;
             border: 2px solid white;
-            border-radius: 5px;
-            padding: 15px;
+            border-radius: 12px;
+            padding: 18px;
             text-align: center;
             cursor: pointer;
+            font-size: 18px;
         }
         
         .location-slot.inactive {
@@ -222,11 +224,14 @@
         .fishing-slot {
             background-color: #0a640a;
             border: 2px solid white;
-            border-radius: 5px;
-            padding: 15px;
+            border-radius: 10px;
+            padding: 12px;
             text-align: center;
-            min-height: 120px;
+            min-height: 140px;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         
         .fishing-slot.empty {
@@ -234,33 +239,37 @@
         }
         
         .fishing-action {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 5px 10px;
+            padding: 8px 12px;
             background-color: #ffc800;
             color: black;
             border: none;
-            border-radius: 3px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+        
+        .fishing-action.red {
+            background-color: #c80000;
+            color: white;
         }
         
         .inventory-list {
-            max-height: 300px;
+            max-height: 50vh;
             overflow-y: auto;
             margin: 15px 0;
             border: 1px solid #646464;
-            border-radius: 5px;
+            border-radius: 10px;
             padding: 10px;
         }
         
         .inventory-item {
-            padding: 8px;
+            padding: 12px;
             border-bottom: 1px solid #646464;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
         
         .inventory-item:last-child {
@@ -275,8 +284,85 @@
         }
         
         .sell-quantity {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
+        }
+        
+        .control-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .steal-slots-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 15px 0;
+        }
+        
+        .steal-slot {
+            background-color: #0046a0;
+            border: 2px solid white;
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .steal-slot.revealed {
+            background-color: #c80000;
+        }
+        
+        .steal-slot.no-fish {
+            background-color: #646464;
+        }
+        
+        .event-banner {
+            background-color: #ff0000;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .back-button {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 300px;
+            z-index: 10;
+        }
+        
+        /* Tùy chỉnh thanh cuộn cho mobile */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
@@ -285,7 +371,8 @@
         <!-- Màn hình chính -->
         <div id="main-menu" class="screen active">
             <h1>CẮM CÂU CÁ LÓC</h1>
-            <div class="stats">
+            
+            <div class="stats-bar">
                 <div class="stat-item">
                     <div>Cấp: <span id="player-level">1</span></div>
                 </div>
@@ -297,8 +384,8 @@
                 </div>
             </div>
             
-            <div id="event-info" style="margin-bottom: 15px; display: none;">
-                <div class="button christmas" id="event-button">SỰ KIỆN ĐANG DIỄN RA</div>
+            <div id="event-info" style="display: none;">
+                <div class="event-banner" id="event-banner">SỰ KIỆN ĐANG DIỄN RA</div>
             </div>
             
             <button class="button blue" id="char-info-btn">THÔNG TIN NHÂN VẬT</button>
@@ -307,13 +394,13 @@
             <button class="button green" id="fishing-btn">ĐI CẮM CÂU</button>
             <button class="button red" id="steal-btn">THĂM TRỘM CẦN (Tốn 20 HP)</button>
             <button class="button christmas" id="christmas-btn" style="display: none;">QUÀ GIÁNG SINH</button>
-            <button class="button red" id="quit-btn">THOÁT</button>
         </div>
         
         <!-- Màn hình thông tin nhân vật -->
         <div id="character-screen" class="screen">
             <h1>THÔNG TIN NHÂN VẬT</h1>
-            <div class="stats">
+            
+            <div class="stats-bar">
                 <div class="stat-item">
                     <div>Tên: <span id="player-name">Ngư Phủ Làng Chài</span></div>
                 </div>
@@ -325,32 +412,202 @@
                 </div>
             </div>
             
-            <div>
+            <div style="margin-bottom: 20px;">
                 <div>HP: <span id="char-hp">100</span>/100</div>
                 <div class="progress-bar hp-bar">
                     <div class="progress-fill" id="hp-fill" style="width: 100%"></div>
                 </div>
             </div>
             
-            <div>
+            <div style="margin-bottom: 20px;">
                 <div>EXP: <span id="char-exp">0</span>/<span id="char-exp-needed">100</span></div>
                 <div class="progress-bar exp-bar">
                     <div class="progress-fill" id="exp-fill" style="width: 0%"></div>
                 </div>
             </div>
             
-            <div style="margin-top: 15px;">
+            <div style="margin-bottom: 20px;">
                 <div>Cá đã bắt: <span id="fish-caught">0</span> con (<span id="fish-weight">0.00</span> kg)</div>
                 <div id="christmas-items" style="margin-top: 10px; display: none;">Vật phẩm Giáng Sinh: <span id="christmas-count">0</span> món</div>
             </div>
             
-            <button class="button" id="char-back-btn">Quay Lại</button>
+            <button class="button back-button" id="char-back-btn">Quay Lại</button>
         </div>
         
         <!-- Màn hình túi đồ -->
         <div id="inventory-screen" class="screen">
             <h1>TÚI ĐỒ</h1>
-            <div class="stats">
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>Cần câu: <span id="rods-count">5</span>/<span id="max-rods">5</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>Xu: <span id="inventory-coins">1000</span></div>
+                </div>
+            </div>
+            
+            <h3>Cần Câu</h3>
+            <div class="rod-grid" id="rods-grid">
+                <!-- Các ô cần câu sẽ được tạo động -->
+            </div>
+            
+            <button class="button green" id="shop-btn">CỬA HÀNG</button>
+            <button class="button red" id="sell-fish-btn">BÁN CÁ</button>
+            
+            <button class="button back-button" id="inventory-back-btn">Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình nâng cấp cần câu -->
+        <div id="upgrade-screen" class="screen">
+            <h1 id="upgrade-title">NÂNG CẤP CẦN</h1>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>Xu hiện tại: <span id="upgrade-coins">1000</span></div>
+                </div>
+            </div>
+            
+            <div id="rod-details" style="background-color: rgba(50, 50, 50, 0.8); padding: 15px; border-radius: 10px; margin: 15px 0;">
+                <!-- Thông tin cần câu sẽ được hiển thị ở đây -->
+            </div>
+            
+            <button class="button" id="upgrade-btn" style="display: none;">NÂNG CẤP</button>
+            
+            <button class="button back-button" id="upgrade-back-btn">Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình cửa hàng -->
+        <div id="shop-screen" class="screen">
+            <h1>CỬA HÀNG</h1>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>Xu hiện tại: <span id="shop-coins">1000</span></div>
+                </div>
+            </div>
+            
+            <button class="button" id="buy-rod-btn">MUA CẦN SẮT - 10,000 Xu</button>
+            <button class="button blue" id="upgrade-limit-btn">MỞ GIỚI HẠN CẦN CÂU - 50,000 Xu</button>
+            
+            <button class="button back-button" id="shop-back-btn">Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình bán cá -->
+        <div id="sell-fish-screen" class="screen">
+            <h1>BÁN CÁ CHO THƯƠNG LÁI</h1>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>Xu hiện tại: <span id="sell-coins">1000</span></div>
+                </div>
+            </div>
+            
+            <div style="margin: 15px 0;">
+                <div>Giá bán Cá Lóc: 100 Xu/kg</div>
+            </div>
+            
+            <div id="fish-list" class="inventory-list">
+                <!-- Danh sách cá sẽ được tạo động -->
+            </div>
+            
+            <div id="sell-controls" style="display: none;">
+                <h3 id="selected-fish-name">Cá Lóc</h3>
+                <div class="sell-controls">
+                    <button class="button red control-button" id="minus-btn">-</button>
+                    <div class="sell-quantity" id="sell-quantity">1</div>
+                    <button class="button blue control-button" id="plus-btn">+</button>
+                    <button class="button control-button" id="max-btn">Max</button>
+                </div>
+                <button class="button red" id="sell-btn">BÁN <span id="sell-count">1</span> CON</button>
+            </div>
+            
+            <button class="button back-button" id="sell-back-btn">Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình chợ cá -->
+        <div id="market-menu" class="screen">
+            <h1>CHỢ CÁ TỰ DO</h1>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>Xu: <span id="market-coins">1000</span></div>
+                </div>
+            </div>
+            
+            <div id="market-status">
+                <div id="market-time" style="margin-bottom: 15px; display: none;">Đang thuê chỗ: <span id="time-left">0</span> phút</div>
+                <button class="button green" id="rent-slot-btn" style="display: block;">THUÊ CHỖ NGỒI - 10 Xu</button>
+                <button class="button red" id="go-selling-btn" style="display: none;">VÀO BÀY BÁN CÁ</button>
+            </div>
+            
+            <button class="button back-button" id="market-back-btn">Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình chọn cá bán tại chợ -->
+        <div id="market-select-fish" class="screen">
+            <h1>CHỌN CÁ BÀY BÁN (TẠI CHỢ)</h1>
+            
+            <div style="margin-bottom: 15px;">
+                <div>Đã chọn: <span id="selected-fish-count">0</span> con</div>
+                <div style="font-size: 14px; color: #ffc800; text-align: center;">Chỉ cá từ 1kg trở lên mới được bán tại Chợ Tự Do</div>
+            </div>
+            
+            <div id="market-fish-list" class="inventory-list">
+                <!-- Danh sách cá sẽ được tạo động -->
+            </div>
+            
+            <button class="button green" id="finish-selecting-btn">HOÀN TẤT (Vào Chợ)</button>
+            <button class="button back-button" id="market-select-back-btn">QUAY LẠI</button>
+        </div>
+        
+        <!-- Màn hình bán cá tại chợ -->
+        <div id="market-sell-screen" class="screen">
+            <h1>ĐANG BÀY BÁN CÁ</h1>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>Xu: <span id="market-sell-coins">1000</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>Thời gian còn lại: <span id="market-time-left">0</span> phút</div>
+                </div>
+            </div>
+            
+            <h3>Cá đang bày bán</h3>
+            <div id="market-selling-list" class="inventory-list">
+                <!-- Danh sách cá đang bán sẽ được tạo động -->
+            </div>
+            
+            <div id="customer-area" style="margin-top: 15px; display: none;">
+                <h3 id="customer-name">KHÁCH HÀNG</h3>
+                <div id="customer-offer" style="margin-bottom: 15px; text-align: center;">Trả giá 0 Xu cho Cá Lóc (0.00 kg)?</div>
+                <button class="button green" id="accept-offer-btn">ĐỒNG Ý BÁN</button>
+                <button class="button red" id="reject-offer-btn">TỪ CHỐI</button>
+            </div>
+            
+            <div id="waiting-customer" style="margin-top: 15px; display: block; text-align: center;">
+                <div>Đang chờ khách hàng...</div>
+            </div>
+            
+            <button class="button back-button" id="market-sell-back-btn" style="display: none;">RÚT LUI (Về Menu Chợ)</button>
+        </div>
+        
+        <!-- Màn hình quà Giáng Sinh -->
+        <div id="christmas-gift-screen" class="screen">
+            <h1>QUÀ GIÁNG SINH</h1>
+            
+            <div style="margin-bottom: 15px;">
+                <h3>Vật phẩm Giáng Sinh của bạn:</h3>
+                <div id="christmas-items-list" style="text-align: center; padding: 15px;">
+                    <!-- Danh sách vật phẩm Giáng Sinh sẽ được tạo động -->
+                </div>
+            </div>
+            
+            <button class="button christmas" id="exchange-gift-btn">ĐỔI QUÀ GIÁNG SINH</button>
+            
+            <div id="exchange-result" style="margin-top: 15px; display: none; text-align: center;">
+         <div class="stats">
                 <div class="stat-item">
                     <div>Cần câu: <span id="rods-count">5</span>/<span id="max-rods">5</span></div>
                 </div>
