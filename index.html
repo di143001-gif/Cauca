@@ -3,69 +3,74 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Cắm Câu — WebGame</title>
+<title>Cắm Câu — Web (phiên bản giống caucafix.py)</title>
 <style>
-  :root{
-    --bg:#0b2a2f;
-    --bank:#6b5e3c;
-    --water:#0b4f73;
-    --panel:#0f1f2a;
-    --accent:#ffd166;
-    --muted:#9aa8b2;
-    font-family:Segoe UI, Roboto, Arial, sans-serif;
-  }
-  html,body{height:100%;margin:0;background:linear-gradient(#071a22,#07242b);display:flex;align-items:center;justify-content:center;}
-  #gamewrap{width:100%;max-width:900px;height:100%;max-height:1600px;background:linear-gradient(#08323b,#052028);box-shadow:0 10px 40px rgba(0,0,0,.6);position:relative;border-radius:8px;overflow:hidden;}
-  canvas{display:block;background:transparent;width:100%;height:calc(100% - 180px);}
-  #ui{position:absolute;left:0;right:0;bottom:0;height:180px;background:var(--panel);color:white;padding:12px;box-sizing:border-box;display:flex;gap:12px;align-items:flex-start;}
-  .col{flex:1;display:flex;flex-direction:column;gap:8px;}
-  .left{flex:0 0 320px;}
-  .btn{background:var(--accent);color:#042028;padding:8px 12px;border-radius:6px;border:0;font-weight:700;cursor:pointer}
-  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,.08);color:var(--muted);font-weight:600}
-  .small{font-size:12px;color:var(--muted)}
-  .panel{background:rgba(255,255,255,.03);padding:8px;border-radius:6px;min-height:40px;display:flex;flex-direction:column;gap:6px;}
-  .rod-list{display:flex;gap:6px;flex-wrap:wrap}
-  .rod{background:rgba(255,255,255,.02);padding:6px;border-radius:6px;min-width:90px;text-align:center;cursor:pointer}
-  .rod.active{outline:2px solid var(--accent)}
-  #message{position:absolute;left:50%;transform:translateX(-50%);top:16px;background:rgba(0,0,0,.6);padding:8px 12px;border-radius:8px;color:var(--accent);font-weight:700}
-  #popup{position:absolute;left:50%;transform:translateX(-50%);top:70px;background:linear-gradient(#0a1b2a,#061218);color:white;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.06);display:none;min-width:260px}
-  #popup h3{margin:0 0 6px 0}
-  #footerline{font-size:12px;color:var(--muted);margin-top:6px}
-  @media (max-width:640px){
-    #ui{flex-direction:column;height:260px}
-    canvas{height:calc(100% - 260px)}
-    .left{flex-basis:100%}
-  }
+:root{
+  --bg:#071b20; --panel:#0f2b33; --accent:#ffd166; --muted:#9fb3b9;
+  --water-day:#0b7aa8; --water-night:#02243a; --danger:#ff5964;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+html,body{height:100%;margin:0;background:linear-gradient(#041116,#061a1f);display:flex;align-items:center;justify-content:center}
+#wrap{width:100%;max-width:1100px;height:92vh;background:linear-gradient(#08242a,#052026);border-radius:8px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);position:relative}
+canvas{width:100%;height:calc(100% - 180px);display:block;background:transparent}
+#ui{position:absolute;left:0;right:0;bottom:0;height:180px;background:var(--panel);padding:12px;box-sizing:border-box;display:flex;gap:12px;align-items:flex-start}
+.col{flex:1;display:flex;flex-direction:column;gap:8px}
+.left{flex:0 0 340px}
+.panel{background:rgba(255,255,255,.02);padding:8px;border-radius:6px;color:#fff}
+.btn{background:var(--accent);border:0;padding:8px 10px;border-radius:6px;cursor:pointer;font-weight:700}
+.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--muted);font-weight:600}
+.small{font-size:12px;color:var(--muted)}
+.rod-list{display:flex;gap:8px;flex-wrap:wrap}
+.rod{background:rgba(255,255,255,.02);padding:6px;border-radius:6px;min-width:90px;text-align:center;cursor:pointer}
+.rod.active{outline:2px solid var(--accent)}
+#message{position:absolute;left:50%;transform:translateX(-50%);top:14px;background:rgba(0,0,0,.6);padding:8px 12px;border-radius:8px;color:var(--accent);font-weight:700}
+#popup{position:absolute;left:50%;transform:translateX(-50%);top:64px;background:linear-gradient(#0b2430,#06131a);color:white;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,.06);display:none;min-width:300px;z-index:20}
+@media(max-width:760px){
+  #ui{flex-direction:column;height:280px}
+  canvas{height:calc(100% - 280px)}
+  .left{flex-basis:100%}
+}
 </style>
 </head>
 <body>
-<div id="gamewrap">
-  <canvas id="c"></canvas>
+<div id="wrap">
+  <canvas id="screen"></canvas>
   <div id="message">Chào ngư phủ!</div>
   <div id="popup"></div>
+
   <div id="ui">
     <div class="col left">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="font-weight:800;font-size:18px">Ngư Phủ</div>
-          <div class="small" id="timeLabel">—</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-weight:800;color:var(--accent)" id="coins">0 Xu</div>
-          <div class="small" id="level">Lv 1</div>
-        </div>
-      </div>
-      <div class="panel" style="margin-top:8px">
+      <div class="panel">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <div class="small">Đang cắm</div>
-          <div class="small" id="castInfo">0/0</div>
+          <div>
+            <div style="font-weight:800;font-size:18px">Ngư Phủ Làng Chài</div>
+            <div class="small" id="timeLabel">—</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-weight:800;color:var(--accent)" id="coins">0 Xu</div>
+            <div class="small" id="level">Lv 1</div>
+          </div>
         </div>
-        <div style="display:flex;gap:8px;margin-top:6px">
-          <button class="btn" id="btnCast">Cắm cần</button>
-          <button class="btn secondary" id="btnCollect">Thu cá</button>
-          <button class="btn secondary" id="btnSell">Bán</button>
+
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn" id="btnMainMenu">Menu</button>
+          <button class="btn secondary" id="btnInventory">Túi đồ</button>
+          <button class="btn secondary" id="btnMarket">Chợ</button>
         </div>
-        <div id="footerline">Giao diện 2D góc nghiêng. Cá chỉ xuất hiện khi dính.</div>
+
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn" id="btnCastAll">Cắm tất cả</button>
+          <button class="btn secondary" id="btnCollectAll">Thu tất cả</button>
+        </div>
+        <div class="small" style="margin-top:6px" id="statusLine">Trạng thái game</div>
+      </div>
+
+      <div class="panel" style="margin-top:8px">
+        <div style="display:flex;justify-content:space-between">
+          <div style="font-weight:700">Sự kiện</div>
+          <div class="small" id="eventBox">Không có</div>
+        </div>
+        <div class="small" style="margin-top:8px">Sự kiện tự động xuất hiện (boost rate/exp/market)</div>
       </div>
     </div>
 
@@ -73,17 +78,17 @@
       <div class="panel">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div style="font-weight:700">Cần câu</div>
-          <div class="small">Chọn / Nâng cấp</div>
+          <div class="small">Chọn - Nâng cấp</div>
         </div>
         <div class="rod-list" id="rodList"></div>
-        <div style="display:flex;gap:8px;margin-top:6px">
+        <div style="display:flex;gap:8px;margin-top:8px">
           <button class="btn" id="btnUpgrade">Nâng cấp</button>
-          <button class="btn secondary" id="btnBuy">Mua cần sắt (10k)</button>
+          <button class="btn secondary" id="btnBuyRod">Mua Cần Sắt (10k)</button>
         </div>
       </div>
 
       <div class="panel" style="margin-top:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;justify-content:space-between">
           <div style="font-weight:700">Kho cá</div>
           <div class="small" id="fishSummary">0 con</div>
         </div>
@@ -91,20 +96,21 @@
       </div>
     </div>
 
-    <div class="col" style="flex:0 0 220px">
+    <div class="col" style="flex:0 0 260px">
       <div class="panel">
-        <div style="font-weight:700">Sự kiện & Thông tin</div>
-        <div class="small" id="eventBox">Không có sự kiện</div>
-        <div style="margin-top:8px">
-          <button class="btn" id="btnToggleDay">Bật/Tắt Ngày</button>
+        <div style="font-weight:700">Chợ</div>
+        <div class="small" id="marketInfo">Không thuê chỗ</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" id="btnRentMarket">Thuê chỗ (10 Xu / 30p)</button>
+          <button class="btn secondary" id="btnGoMarket">Vào chợ</button>
         </div>
       </div>
 
       <div class="panel" style="margin-top:8px">
-        <div style="font-weight:700">Lưu/Khôi phục</div>
-        <div style="display:flex;gap:8px;margin-top:6px">
-          <button class="btn secondary" id="btnSave">Lưu</button>
-          <button class="btn secondary" id="btnLoad">Tải</button>
+        <div style="font-weight:700">Giáng Sinh</div>
+        <div class="small" id="christmasInfo">Không</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" id="btnExchangeChristmas">Đổi quà</button>
         </div>
       </div>
     </div>
@@ -112,424 +118,591 @@
 </div>
 
 <script>
-/*
-  WebGame: Cắm Câu (HTML5 Canvas)
-  - Single-file game
-  - Save using localStorage
-  - Features: cast rod, chance to catch, popup with fish info (type, rarity, kg, price),
-              sell fish, upgrade rod, day/night fish spawn differences
-  - Responsive canvas
-*/
+/* ---------- Mô phỏng logic căn bản dựa trên caucafix.py (rút gọn cho web) ---------- */
 
-/* ---------- CONFIG ---------- */
+/* ---------- Cấu hình (bám sát file gốc) ---------- */
 const CONFIG = {
-  width: 1080,
-  height: 620,
-  baseCoins: 1000,
-  fishPricePerKg: {"Cá Lóc":100, "Cá Vàng":200, "Cá Hiếm":1000},
-  rodTemplates: [
-    {name:"Cần Tre", baseRate:0.0005, baseExp:0.0, baseTime:30, baseCost:100, buyPrice: null},
-    {name:"Cần Sắt", baseRate:0.005, baseExp:0.1, baseTime:60, baseCost:200, buyPrice:10000}
-  ],
-  upgradeMultiplier: 2,
-  maxRods: 6
+  FPS: 30,
+  GAME_SAVE_KEY: "caucafix_web_save_v1",
+  MAX_RODS: 5,
+  MARKET_SLOT_COST: 10,
+  MARKET_SLOT_DURATION: 30*60, // 30 phút (giây)
+  EVENT_DURATION: 5*60, // 5 phút (s)
+  EVENT_COOLDOWN: 5*60,
+  CHRISTMAS_DURATION: 7*24*60*60, // 7 ngày
+  CHRISTMAS_EXCHANGE_REQ: {
+    "Tất Giáng Sinh": 10,
+    "Mũ Giáng Sinh": 10,
+    "Kẹo Giáng Sinh": 10,
+    "Cá Lóc": 10.0
+  },
+  CHRISTMAS_SUCCESS_RATE: 0.05,
+  ROD_TEMPLATES: {
+    "Cần Tre": { base_rate_bonus:0.000, base_exp_bonus:0.0, max_level:10, rate_per_level:0.0005, exp_per_level:0.02, base_cast_time:30, base_upgrade_cost:100, buy_price:null },
+    "Cần Sắt": { base_rate_bonus:0.005, base_exp_bonus:0.1, max_level:10, rate_per_level:0.001, exp_per_level:0.03, base_cast_time:60, base_upgrade_cost:200, buy_price:10000 },
+    "Cần Giáng Sinh": { base_rate_bonus:0.015, base_exp_bonus:0.3, max_level:1, rate_per_level:0.0, exp_per_level:0.0, base_cast_time:90, base_upgrade_cost:0, buy_price:null }
+  },
+  FISH_PRICE_PER_KG: {"Cá Lóc":100, "Cá Vàng":200, "Cá Hiếm":1000}
 };
 
-/* ---------- STATE ---------- */
+/* ---------- State (mô phỏng các biến global file gốc) ---------- */
 let state = {
-  coins: 0,
-  level:1,
-  exp:0,
-  rods: [], // {id, name, level, status, castTimeLeft, totalTime}
-  selectedRodId: 0,
-  fishInventory: [], // {id,name,weight,price}
-  isDay: true,
-  event: null,
-  message: "",
+  player_level:1,
+  player_exp:0,
+  player_coins:1000,
+  player_name:"Ngư Phủ Làng Chài",
+  player_health:100,
+  rods_inventory:[], // mỗi rod: {id,name,template,level,status,cast_time,cast_start,last_check_time,current_rate_bonus,current_exp_bonus,total_rate_bonus,total_time_bonus,max_cast_minutes,expiry_time,catch_data,location,channel,slot_index}
+  fish_inventory:[], // {id,name,weight,exp}
+  christmas_items_inventory:[],
+  current_event:null,
+  event_start_time:0,
+  event_end_time:0,
+  event_cooldown_end:0,
+  last_event_check_time:0,
+  is_christmas_event_active:false,
+  CHRISTMAS_EVENT_START:null,
+  CHRISTMAS_EVENT_END:null,
+  market_slot_end_time:0,
+  market_selling_fish:[],
+  market_customer:null,
+  last_customer_time:0,
+  game_state:"MAIN_MENU",
+  message_display:null,
+  selected_rod_id: null,
+  isDay:true
 };
 
-/* ---------- UTIL ---------- */
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
-function rand(min,max){ return min + Math.random()*(max-min); }
-function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+/* ---------- Helpers ---------- */
+const uid = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const nowSec = ()=>Math.floor(Date.now()/1000);
 
-/* ---------- INIT DEFAULTS ---------- */
-function createDefaultRod(id, templateIdx=0){
-  const t = CONFIG.rodTemplates[templateIdx];
-  return {id,templateIdx,name:t.name,level:1,status:"idle",castStart:0,castDuration:t.baseTime,totalBonusRate:0,totalBonusTime:0};
+/* ---------- Khởi tạo rods giống file gốc (5 cần mặc định) ---------- */
+function create_default_rod(id_num, template_name){
+  const tpl = CONFIG.ROD_TEMPLATES[template_name];
+  const rate = tpl.base_rate_bonus + (1-1)*tpl.rate_per_level;
+  const exp = tpl.base_exp_bonus + (1-1)*tpl.exp_per_level;
+  return {
+    id:id_num, status:"Trống", name:template_name, template:template_name,
+    level:1, current_rate_bonus:rate, total_rate_bonus:0.0, current_exp_bonus:exp,
+    max_cast_minutes:tpl.base_cast_time, total_time_bonus:0, catch_data:null
+  };
 }
 
-function init(){
-  // load if exists
-  const s = localStorage.getItem("caucaf_state_v1");
-  if(s){
-    try{ state = JSON.parse(s); }
-    catch(e){ console.warn("load err",e); setupNew(); }
-  } else setupNew();
-
-  // ensure rods
-  if(!state.rods || state.rods.length===0){
-    state.rods = [];
-    for(let i=0;i<3;i++) state.rods.push(createDefaultRod(i,i<2?i:0));
-  }
-  renderUI();
-  loop();
-}
-
-function setupNew(){
-  state.coins = CONFIG.baseCoins;
-  state.level = 1;
-  state.exp = 0;
-  state.rods = [createDefaultRod(0,0), createDefaultRod(1,1)];
-  state.selectedRodId = 0;
-  state.fishInventory = [];
-  state.isDay = true;
-  state.event = null;
-  saveState();
-}
-
-/* ---------- SAVE / LOAD ---------- */
-function saveState(){
-  localStorage.setItem("caucaf_state_v1", JSON.stringify(state));
+/* ---------- Load/Save (localStorage thay file) ---------- */
+function save_game(){
+  const data = {
+    player_level: state.player_level,
+    player_exp: state.player_exp,
+    player_coins: state.player_coins,
+    player_health: state.player_health,
+    rods_inventory: state.rods_inventory,
+    fish_inventory: state.fish_inventory,
+    last_save_time: nowSec(),
+    market_slot_end_time: state.market_slot_end_time,
+    current_event: state.current_event,
+    event_start_time: state.event_start_time,
+    event_end_time: state.event_end_time,
+    event_cooldown_end: state.event_cooldown_end,
+    last_event_check_time: state.last_event_check_time,
+    is_christmas_event_active: state.is_christmas_event_active,
+    CHRISTMAS_EVENT_START: state.CHRISTMAS_EVENT_START,
+    CHRISTMAS_EVENT_END: state.CHRISTMAS_EVENT_END,
+    christmas_items_inventory: state.christmas_items_inventory
+  };
+  localStorage.setItem(CONFIG.GAME_SAVE_KEY, JSON.stringify(data));
   showMessage("Đã lưu trò chơi");
 }
-function loadState(){
-  const s = localStorage.getItem("caucaf_state_v1");
-  if(s){ state = JSON.parse(s); showMessage("Đã tải trạng thái"); renderUI(); }
-  else showMessage("Không có dữ liệu lưu");
-}
 
-/* ---------- GAME LOGIC ---------- */
-function getRodRate(rod){
-  const t = CONFIG.rodTemplates[rod.templateIdx];
-  const base = t.baseRate + (rod.level-1)*t.levelRate || t.baseRate;
-  // include upgrades
-  const total = (t.baseRate + (rod.level-1)*(t.baseRate*0.5)) + (rod.totalBonusRate||0);
-  return total;
-}
-function getRodCastTime(rod){
-  const t = CONFIG.rodTemplates[rod.templateIdx];
-  return t.baseTime + (rod.totalBonusTime||0);
-}
-
-function tryStartCast(rod){
-  if(rod.status==="casting") return showMessage("Cần đang cắm");
-  rod.status = "casting";
-  rod.castStart = Date.now();
-  rod.castDuration = getRodCastTime(rod) * 60 * 1000; // minutes -> ms
-  showMessage("Đã cắm cần");
-  renderUI();
-}
-function collectRod(rod){
-  if(rod.status!=="caught" && rod.status!=="casting") return showMessage("Không có gì để thu");
-  if(rod.status==="caught" && rod.catchData){
-    // add fish
-    state.fishInventory.push(rod.catchData);
-    showPopupCatch(rod.catchData);
-    rod.catchData = null;
+function load_game(){
+  const s = localStorage.getItem(CONFIG.GAME_SAVE_KEY);
+  if(!s) { initDefaults(); showMessage("Bắt đầu game mới"); return; }
+  try{
+    const d = JSON.parse(s);
+    state.player_level = d.player_level||1;
+    state.player_exp = d.player_exp||0;
+    state.player_coins = d.player_coins||0;
+    state.player_health = d.player_health||100;
+    state.rods_inventory = d.rods_inventory && d.rods_inventory.length? d.rods_inventory : [];
+    state.fish_inventory = d.fish_inventory || [];
+    state.market_slot_end_time = d.market_slot_end_time||0;
+    state.current_event = d.current_event||null;
+    state.event_start_time = d.event_start_time||0;
+    state.event_end_time = d.event_end_time||0;
+    state.event_cooldown_end = d.event_cooldown_end||0;
+    state.last_event_check_time = d.last_event_check_time||0;
+    state.is_christmas_event_active = d.is_christmas_event_active||false;
+    state.CHRISTMAS_EVENT_START = d.CHRISTMAS_EVENT_START||null;
+    state.CHRISTMAS_EVENT_END = d.CHRISTMAS_EVENT_END||null;
+    state.christmas_items_inventory = d.christmas_items_inventory || [];
+  }catch(e){
+    console.warn("Load lỗi:",e);
+    initDefaults();
   }
-  rod.status = "idle";
-  renderUI();
-  saveState();
 }
-function forceCheckAll(){
-  // called each tick: check casting rods and determine catches
-  const now = Date.now();
-  for(let rod of state.rods){
-    if(rod.status==="casting"){
-      // we simplify: compute probability per minute -> compute chance over elapsed minutes
-      const elapsed = now - rod.castStart;
-      const castMs = rod.castDuration;
-      const tTemplate = CONFIG.rodTemplates[rod.templateIdx];
-      const locRate = state.isDay ? 0.15 : 0.08; // base environment rate / minute
-      const rodRate = tTemplate.baseRate + (rod.level-1) * (tTemplate.baseRate*1.0);
-      const eventMult = (state.event && state.event.type==="boost_rate") ? 1.5 : 1.0;
 
-      // probability to catch within elapsed period:
-      const minutes = Math.floor(elapsed / 60000);
-      if(minutes <= 0) continue;
-      const totalRatePerMin = clamp(locRate + rodRate + (rod.totalBonusRate||0), 0, 1) * eventMult;
-      const chanceNoFish = Math.pow(1 - totalRatePerMin, minutes);
-      if(Math.random() > chanceNoFish){
-        // caught
-        const weight = state.isDay ? (Math.random()**2)*3 + 0.1 : (Math.random()**3)*2 + 0.1;
-        const name = pickFishByTime();
-        const id = uid();
-        const pricePerKg = CONFIG.fishPricePerKg[name] || 100;
-        const fishObj = {id,name,weight:parseFloat(weight.toFixed(2)),price:Math.round(pricePerKg*weight)};
-        rod.catchData = fishObj;
-        rod.status = "caught";
-        showMessage(`Dính ${name} ${fishObj.weight} kg!`);
-        // stop casting (player must collect)
-      }else{
-        // if cast duration exceeded -> ended (no catch)
-        if(elapsed >= castMs){
-          rod.status = "idle";
-          showMessage("Hết giờ cắm, không có gì");
-        }
-      }
+/* ---------- Init defaults (nếu không có save) ---------- */
+function initDefaults(){
+  state.player_level = 1; state.player_exp = 0; state.player_coins = 1000; state.player_health = 100;
+  state.rods_inventory = [];
+  for(let i=0;i<5;i++) state.rods_inventory.push(create_default_rod(i, "Cần Tre"));
+  // thêm 1 Cần Sắt nếu muốn  (giữ tương tự file: tạo default 5 cần Tre)
+  state.fish_inventory = [];
+  state.christmas_items_inventory = [];
+  state.market_slot_end_time = 0; state.market_selling_fish = []; state.market_customer = null;
+  state.current_event = null; state.is_christmas_event_active=false;
+}
+
+/* ---------- Event Giáng Sinh giống file: tự bật từ 15/11 trở đi (đoạn gốc) ---------- */
+function check_christmas_event_status(){
+  const now = new Date();
+  const m = now.getMonth()+1; const d = now.getDate();
+  if(state.is_christmas_event_active && state.CHRISTMAS_EVENT_END && nowSec() >= state.CHRISTMAS_EVENT_END){
+    end_christmas_event();
+    return;
+  }
+  // tự kích hoạt từ 15/11 (giữ giống file gốc)
+  if(!state.is_christmas_event_active && m===11 && d>=15){
+    start_christmas_event();
+  }
+}
+
+function start_christmas_event(){
+  state.is_christmas_event_active = true;
+  state.CHRISTMAS_EVENT_START = nowSec();
+  state.CHRISTMAS_EVENT_END = state.CHRISTMAS_EVENT_START + CONFIG.CHRISTMAS_DURATION;
+  displayMessage("SỰ KIỆN GIÁNG SINH ĐÃ BẮT ĐẦU! 50% cơ hội nhận vật phẩm khi bắt cá.");
+}
+
+function end_christmas_event(){
+  state.is_christmas_event_active = false;
+  state.CHRISTMAS_EVENT_START = null;
+  state.CHRISTMAS_EVENT_END = null;
+  // deactivate expired christmas rods
+  state.rods_inventory.forEach(r=>{
+    if(r.template==="Cần Giáng Sinh" && r.expiry_time && r.expiry_time < nowSec()){
+      r.status="Đã hết hạn";
+      ["cast_time","last_check_time","location","channel","slot_index","catch_data"].forEach(k=>{ if(r[k]) delete r[k]; });
+    }
+  });
+  displayMessage("Sự kiện Giáng Sinh kết thúc.");
+}
+
+/* ---------- Hàm sự kiện/random event (giống file) ---------- */
+function start_random_event(){
+  const rv = Math.random();
+  if(rv < 0.20){
+    state.current_event = {name:"Cá Lóc Hoàng Kim", effect:"boost_rate", color:"#FFD700"};
+  } else if(rv < 0.40){
+    state.current_event = {name:"Ngày Hội EXP", effect:"boost_exp", color:"#00FF96"};
+  } else if(rv < 0.60){
+    state.current_event = {name:"Ngày Sốt Giá", effect:"boost_market", color:"#C8C8C8"};
+  } else {
+    state.current_event = null; return;
+  }
+  state.event_start_time = nowSec();
+  state.event_end_time = state.event_start_time + CONFIG.EVENT_DURATION;
+  displayMessage(`SỰ KIỆN: ${state.current_event.name} (5 phút)`);
+}
+
+function check_event_status(){
+  const now = nowSec();
+  if(state.current_event && now >= state.event_end_time){
+    displayMessage(`Sự kiện ${state.current_event.name} đã kết thúc!`);
+    state.current_event = null;
+    state.event_cooldown_end = now + CONFIG.EVENT_COOLDOWN;
+  }
+  // tự sinh event mỗi phút nếu không có event và không trong cooldown
+  if(!state.current_event && now >= (state.event_cooldown_end||0) && (!state.last_event_check_time || now - state.last_event_check_time >= 60)){
+    state.last_event_check_time = now;
+    if(Math.random() < 0.25) start_random_event();
+  }
+  // check christmas
+  check_christmas_event_status();
+}
+
+/* ---------- Tính toán dính cá (bám sát file) ---------- */
+function get_location_rate(locName){
+  // simplified: 2 khu giống file
+  if(locName==="Khu Rừng Tràm") return 0.10;
+  return 0.15; // Khu Đồng Lớn
+}
+
+function get_event_multiplier(type){
+  if(!state.current_event) return 1.0;
+  if(type==="rate" && state.current_event.effect==="boost_rate") return 1.2;
+  if(type==="exp" && state.current_event.effect==="boost_exp") return 1.5;
+  if(type==="market" && state.current_event.effect==="boost_market") return 1.5;
+  return 1.0;
+}
+
+/* Tính dính cá khi kiểm tra (online) - giống file: tính theo phút, nhưng web sẽ check mỗi giây */
+function check_fishing_for_rod(rod){
+  if(rod.status !== "Đang Cắm" || !rod.location) return;
+  const now = nowSec();
+  if(!rod.last_check_time) rod.last_check_time = now;
+  const minutes = Math.floor((now - rod.last_check_time)/60);
+  if(minutes <= 0) return;
+  const rate_per_minute = get_location_rate(rod.location);
+  const rod_rate_bonus = (rod.current_rate_bonus||0) + (rod.total_rate_bonus||0);
+  const event_mult = get_event_multiplier("rate");
+  const total_rate = (rate_per_minute + rod_rate_bonus) * event_mult;
+  const chance_no_fish = Math.pow(1 - total_rate, minutes);
+  if(Math.random() > chance_no_fish){
+    // caught fish
+    let weight;
+    if(rod.location==="Khu Rừng Tràm") weight = Math.pow(1-Math.random(),4)*4.0 + 1.0;
+    else weight = Math.pow(1-Math.random(),4)*2.9 + 0.1;
+    const exp_mult = get_event_multiplier("exp");
+    const rod_exp_bonus = (rod.current_exp_bonus||0);
+    const exp_gained = Math.round(weight * 50 * (1 + rod_exp_bonus) * exp_mult);
+    let christmas_item = null;
+    if(state.is_christmas_event_active && Math.random() < 0.5){
+      // random christmas item
+      const keys = Object.keys({ "Tất Giáng Sinh":1, "Mũ Giáng Sinh":1, "Kẹo Giáng Sinh":1 });
+      const pick = keys[Math.floor(Math.random()*keys.length)];
+      christmas_item = {name:pick, weight:0.1};
+      state.christmas_items_inventory.push(christmas_item);
+    }
+    const fish = {id: uid(), name:"Cá Lóc", weight:parseFloat(weight.toFixed(2)), exp:exp_gained, christmas_item};
+    rod.catch_data = fish;
+    rod.status = `Đã Dính Cá (${fish.weight}kg)!`;
+  } else {
+    // nếu vượt max cast time -> hết giờ
+    const cast_duration_min = Math.floor((now - (rod.cast_time||now)) / 60);
+    if(cast_duration_min >= (rod.max_cast_minutes || CONFIG.ROD_TEMPLATES[rod.template].base_cast_time)){
+      rod.status = "Hết Giờ";
     }
   }
+  rod.last_check_time = now;
 }
 
-function pickFishByTime(){
-  // simple rarity pool; day has higher chance cá thường, night has rare chance
-  const poolDay = [
-    {name:"Cá Lóc", weight:0.7},
-    {name:"Cá Vàng", weight:0.25},
-    {name:"Cá Hiếm", weight:0.05}
-  ];
-  const poolNight = [
-    {name:"Cá Lóc", weight:0.55},
-    {name:"Cá Vàng", weight:0.30},
-    {name:"Cá Hiếm", weight:0.15}
-  ];
-  const pool = state.isDay ? poolDay : poolNight;
-  const r = Math.random();
-  let acc = 0;
-  for(let p of pool){ acc += p.weight; if(r <= acc) return p.name; }
-  return pool[0].name;
+/* ---------- Nâng cấp cần (giống file: rate/time bonus logic) ---------- */
+function get_upgrade_cost(rod){
+  const tpl = CONFIG.ROD_TEMPLATES[rod.template];
+  const current_level = rod.level;
+  const base = tpl.base_upgrade_cost;
+  return Math.round(base * Math.pow(2, current_level-1));
 }
 
-/* ---------- UI & RENDER ---------- */
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
-function resizeCanvas(){
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * devicePixelRatio;
-  canvas.height = rect.height * devicePixelRatio;
-  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+function upgrade_rod(rod_id){
+  const rod = state.rods_inventory.find(r=>r.id===rod_id);
+  if(!rod) return showMessage("Cần không tồn tại");
+  const tpl = CONFIG.ROD_TEMPLATES[rod.template];
+  if(rod.status==="Đang Cắm") return showMessage("Thu cần trước khi nâng cấp");
+  if(rod.level >= tpl.max_level) return showMessage("Đã đạt cấp tối đa");
+  const cost = get_upgrade_cost(rod);
+  if(state.player_coins < cost) return showMessage(`Không đủ Xu (cần ${cost})`);
+  state.player_coins -= cost;
+  const upgrade_type = Math.random() < 0.5 ? "rate" : "time";
+  let msg="";
+  if(upgrade_type==="rate"){
+    const rand = Math.random();
+    const biased = Math.pow(rand, 10);
+    const rate_bonus = 0.001 + biased*(0.005-0.001);
+    rod.total_rate_bonus = (rod.total_rate_bonus||0) + parseFloat(rate_bonus.toFixed(4));
+    msg = `Tỉ lệ Dính Cá +${(rate_bonus*100).toFixed(2)}%`;
+  } else {
+    const p = Math.random();
+    let time_bonus=1;
+    if(p < 0.7) time_bonus = 1;
+    else if(p < 0.9) time_bonus = Math.floor(randBetween(2,3));
+    else time_bonus = Math.floor(randBetween(4,5));
+    rod.total_time_bonus = (rod.total_time_bonus||0) + time_bonus;
+    rod.max_cast_minutes += time_bonus;
+    msg = `Thời gian cắm +${time_bonus} phút`;
+  }
+  rod.level += 1;
+  // recalc base bonuses
+  const [rateBase,expBase,castTime] = calculate_rod_stats(rod.template, rod.level);
+  rod.current_rate_bonus = rateBase;
+  rod.current_exp_bonus = expBase;
+  showMessage("Nâng cấp thành công: " + msg);
+  save_game();
 }
-window.addEventListener("resize", ()=>{ resizeCanvas(); drawScene(); });
+
+/* helper from file */
+function calculate_rod_stats(template_name, level){
+  const tpl = CONFIG.ROD_TEMPLATES[template_name];
+  if(!tpl) return [0,0,tpl ? tpl.base_cast_time : 30];
+  const rate = tpl.base_rate_bonus + (level-1)*tpl.rate_per_level;
+  const exp = tpl.base_exp_bonus + (level-1)*tpl.exp_per_level;
+  const cast_time = tpl.base_cast_time;
+  return [parseFloat(rate.toFixed(6)), parseFloat(exp.toFixed(4)), cast_time];
+}
+
+/* ---------- Market (giống file: khách hàng random) ---------- */
+function prepare_fish_inventory_ids(){
+  state.fish_inventory.forEach((f,i)=>{ if(!f.id) f.id = uid(); });
+}
+
+function check_for_customer(){
+  if(state.market_customer) return;
+  if(!state.market_selling_fish || state.market_selling_fish.length===0) return;
+  const now = nowSec();
+  if(now - (state.last_customer_time||0) < 10) return;
+  if(Math.random() < 0.2){
+    const fish_to_buy = state.market_selling_fish[Math.floor(Math.random()*state.market_selling_fish.length)];
+    const price_per_kg = CONFIG.FISH_PRICE_PER_KG[fish_to_buy.name] || 100;
+    const merchant_value = fish_to_buy.weight * price_per_kg;
+    const market_multiplier = get_event_multiplier("market");
+    const rv = Math.random();
+    let offer_multiplier, customer_name;
+    const max_multiplier = 1.5 * market_multiplier;
+    if(rv < 0.3){ offer_multiplier = randBetween(0.70,0.99); customer_name = "Lái Buôn Keo Kiệt";}
+    else if(rv < 0.7){ offer_multiplier = randBetween(1.00,1.10); customer_name = "Ông Tư Hào Phóng";}
+    else { offer_multiplier = randBetween(1.11, max_multiplier); customer_name = "Khách VIP";}
+    const offer_price = Math.max(1, Math.round(merchant_value * offer_multiplier));
+    state.market_customer = {name:customer_name, offer:offer_price, fish_id: fish_to_buy.id, fish_name:fish_to_buy.name, fish_weight:fish_to_buy.weight, time:now};
+    state.last_customer_time = now;
+    displayMessage(`Có khách ${customer_name} trả ${offer_price} Xu cho ${fish_to_buy.name}`);
+  }
+}
+
+function accept_market_offer(){
+  if(!state.market_customer) return showMessage("Không có khách trả giá");
+  const fish_id = state.market_customer.fish_id;
+  const offer = state.market_customer.offer;
+  state.player_coins += offer;
+  // remove from market_selling_fish and fish_inventory
+  state.market_selling_fish = state.market_selling_fish.filter(f=>f.id !== fish_id);
+  state.fish_inventory = state.fish_inventory.filter(f=>f.id !== fish_id);
+  const name = state.market_customer.fish_name;
+  displayMessage(`Đã bán ${name} giá ${offer} Xu`);
+  state.market_customer = null;
+  save_game();
+}
+
+function reject_market_offer(){
+  if(!state.market_customer) return showMessage("Không có khách");
+  displayMessage(`${state.market_customer.name} bỏ đi`);
+  state.market_customer = null;
+  state.last_customer_time = nowSec() - 5;
+}
+
+/* ---------- Christmas exchange (giống file) ---------- */
+function can_exchange_christmas_gift(){
+  const summary = get_christmas_summary();
+  const fish_summary = get_fish_summary();
+  for(const key in CONFIG.CHRISTMAS_EXCHANGE_REQ){
+    if(key==="Cá Lóc") continue;
+    const need = CONFIG.CHRISTMAS_EXCHANGE_REQ[key];
+    if(!summary[key] || summary[key].count < need) return false;
+  }
+  if(!fish_summary["Cá Lóc"] || fish_summary["Cá Lóc"].total_weight < CONFIG.CHRISTMAS_EXCHANGE_REQ["Cá Lóc"]) return false;
+  return true;
+}
+
+function exchange_christmas_gift(){
+  if(!can_exchange_christmas_gift()) return showMessage("Không đủ vật phẩm để đổi");
+  // remove items and fish per file logic
+  // remove fish Lóc 10kg (approx by weight)
+  let remaining = CONFIG.CHRISTMAS_EXCHANGE_REQ["Cá Lóc"];
+  state.fish_inventory = state.fish_inventory.filter(f=>{
+    if(remaining > 0 && f.name==="Cá Lóc"){
+      remaining -= f.weight;
+      return remaining > 0;
+    }
+    return true;
+  });
+  // remove christmas items
+  for(const key in CONFIG.CHRISTMAS_EXCHANGE_REQ){
+    if(key==="Cá Lóc") continue;
+    let need = CONFIG.CHRISTMAS_EXCHANGE_REQ[key];
+    for(let i=state.christmas_items_inventory.length-1;i>=0 && need>0;i--){
+      if(state.christmas_items_inventory[i].name === key){ state.christmas_items_inventory.splice(i,1); need--; }
+    }
+  }
+  // roll success
+  if(Math.random() < CONFIG.CHRISTMAS_SUCCESS_RATE){
+    // success: give Cần Giáng Sinh with expiry 5 ngày
+    const newId = state.rods_inventory.reduce((m,r)=>Math.max(m,r.id), -1) + 1;
+    const expiry = nowSec() + 5*24*60*60;
+    const newRod = create_default_rod(newId, "Cần Giáng Sinh");
+    newRod.expiry_time = expiry;
+    state.rods_inventory.push(newRod);
+    showMessage("Chúc mừng! Nhận được Cần Giáng Sinh (hạn 5 ngày)");
+  } else {
+    // give coins probabilistically
+    const r = Math.random();
+    let coins=5000;
+    if(r<0.4) coins=5000;
+    else if(r<0.65) coins=10000;
+    else if(r<0.85) coins=20000;
+    else if(r<0.95) coins=30000;
+    else coins=50000;
+    state.player_coins += coins;
+    showMessage(`Đổi thất bại nhưng nhận ${coins} Xu`);
+  }
+  save_game();
+}
+
+/* ---------- Utility functions ---------- */
+function randBetween(a,b){ return a + Math.random()*(b-a); }
+function showMessage(txt, timeout=3500){ const el = document.getElementById("message"); el.textContent = txt; el.style.opacity = 1; setTimeout(()=>el.style.opacity=0, timeout); }
+function displayMessage(txt){ state.message_display = {text:txt, start: nowSec(), duration:5}; showMessage(txt); }
+
+/* ---------- UI rendering (tray) ---------- */
+const canvas = document.getElementById("screen"); const ctx = canvas.getContext("2d");
+function resizeCanvas(){ const rect = canvas.getBoundingClientRect(); canvas.width = rect.width * devicePixelRatio; canvas.height = rect.height * devicePixelRatio; ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); drawScene(); }
+window.addEventListener("resize", resizeCanvas);
 
 function drawScene(){
-  // clear
   const w = canvas.clientWidth, h = canvas.clientHeight;
   ctx.clearRect(0,0,w,h);
-
-  // draw river perspective (simple isometric-ish)
-  const riverTop = h*0.18, riverBottom = h*0.88;
-  // bank left
-  ctx.fillStyle = "#6b5e3c";
-  ctx.fillRect(0,riverBottom-40,w*0.25,40);
-  // river
-  const grad = ctx.createLinearGradient(0,riverTop,0,riverBottom);
+  // draw river (day/night)
+  const top = 0.12*h, bottom = 0.88*h;
+  const grad = ctx.createLinearGradient(0,top,0,bottom);
   grad.addColorStop(0, state.isDay ? "#0b7aa8" : "#02243a");
   grad.addColorStop(1, state.isDay ? "#035f85" : "#00142a");
   ctx.fillStyle = grad;
-  // draw simple trapezoid for perspective
-  ctx.beginPath();
-  ctx.moveTo(0,riverBottom);
-  ctx.lineTo(0,riverTop + 20);
-  ctx.lineTo(w,riverTop);
-  ctx.lineTo(w,riverBottom);
-  ctx.closePath();
-  ctx.fill();
-
-  // bank on right
-  ctx.fillStyle = "#3a2f22";
-  ctx.fillRect(w*0.8,riverBottom-40,w*0.2,40);
-
-  // player (left bank)
-  const px = 60, py = riverBottom - 80;
-  drawPlayer(px,py);
-
-  // rods and bobbers
-  state.rods.forEach((rod, idx)=>{
-    const sx = 160 + idx*80;
-    const sy = riverTop + (idx%2)*20;
-    // line
-    ctx.strokeStyle = rod.status==="casting" ? "#ffd166" : "#999";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(px+24,py-10);
-    ctx.lineTo(sx,sy+10);
-    ctx.stroke();
-    // bobber
-    ctx.beginPath();
-    ctx.fillStyle = rod.status==="caught" ? "#ff4d4d" : "#fff";
-    ctx.arc(sx,sy+10,8,0,Math.PI*2);
-    ctx.fill();
-    // label
-    ctx.fillStyle = "white";
-    ctx.font = "12px Roboto";
-    ctx.fillText(rod.name + " Lv"+rod.level, sx-30, sy-10);
-    if(rod.status==="casting"){
-      ctx.fillStyle = "rgba(255,255,255,.6)";
-      ctx.fillText("Đang cắm", sx-26, sy+32);
-    } else if(rod.status==="caught"){
-      ctx.fillStyle = "#ffd166";
-      ctx.fillText("Đã dính!", sx-26, sy+32);
-    }
+  ctx.beginPath(); ctx.moveTo(0,bottom); ctx.lineTo(0,top+10); ctx.lineTo(w,top); ctx.lineTo(w,bottom); ctx.closePath(); ctx.fill();
+  // draw player left
+  const px = 70, py = bottom-60;
+  ctx.fillStyle = "#ffd166"; ctx.beginPath(); ctx.arc(px+10,py-30,12,0,2*Math.PI); ctx.fill();
+  ctx.fillStyle = "#333"; ctx.fillRect(px-8,py-20,36,36);
+  // rods slots & bobbers
+  state.rods_inventory.forEach((rod,i)=>{
+    const sx = 200 + i*86; const sy = top + (i%2)*18;
+    ctx.strokeStyle = rod.status.startsWith("Đang Cắm") ? "#ffd166" : "#fff";
+    ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(px+18,py-10); ctx.lineTo(sx,sy+10); ctx.stroke();
+    ctx.beginPath(); ctx.fillStyle = rod.status.includes("Dính") || rod.status.startsWith("Đã Dính") ? "#ff4d4d" : "#fff"; ctx.arc(sx,sy+10,8,0,2*Math.PI); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.font="12px Arial"; ctx.fillText(`${rod.name} Lv${rod.level}`, sx-30, sy-12);
   });
-
-  // floating fishes (inventory preview small)
-  let ix = 10;
-  state.fishInventory.slice(0,8).forEach(f=>{
-    ctx.fillStyle = "#ffa";
-    ctx.fillRect(ix,10,40,18);
-    ctx.fillStyle="#053";
-    ctx.fillText(`${f.name} ${f.weight}kg`, ix+2, 22);
-    ix += 46;
-  });
+  // HUD small
+  ctx.fillStyle="#fff"; ctx.font="12px Arial";
+  ctx.fillText(`Cần trống: ${state.rods_inventory.filter(r=>r.status==="Trống").length}/${CONFIG.MAX_RODS}`, 10, 18);
 }
 
-function drawPlayer(x,y){
-  // simple character: circle head + body
-  ctx.fillStyle = "#ffd166"; ctx.beginPath(); ctx.arc(x+6,y-30,10,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle = "#444"; ctx.fillRect(x-6,y-20,28,32);
-}
-
-/* ---------- UI RENDER ---------- */
 function renderUI(){
-  document.getElementById("coins").textContent = `${state.coins} Xu`;
-  document.getElementById("level").textContent = `Lv ${state.level}`;
+  document.getElementById("coins").textContent = `${state.player_coins} Xu`;
+  document.getElementById("level").textContent = `Lv ${state.player_level}`;
   document.getElementById("timeLabel").textContent = state.isDay ? "Ban ngày" : "Ban đêm";
-  document.getElementById("castInfo").textContent = `${state.rods.filter(r=>r.status==="casting").length}/${state.rods.length}`;
-  document.getElementById("eventBox").textContent = state.event ? `${state.event.name}` : "Không có sự kiện";
-  // rod list
+  document.getElementById("statusLine").textContent = state.game_state;
+  document.getElementById("eventBox").textContent = state.current_event ? state.current_event.name : "Không có";
+  document.getElementById("marketInfo").textContent = state.market_slot_end_time > nowSec() ? "Đang thuê chỗ" : "Chưa thuê";
+  document.getElementById("christmasInfo").textContent = state.is_christmas_event_active ? "Sự kiện đang chạy" : "Không";
+  // rods list
   const rl = document.getElementById("rodList"); rl.innerHTML="";
-  state.rods.forEach(r=>{
-    const el = document.createElement("div");
-    el.className = "rod" + (r.id===state.selectedRodId ? " active":"");
-    el.innerHTML = `<div style="font-weight:700">${r.name}</div><div class="small">Lv ${r.level}</div>`;
-    el.addEventListener("click", ()=>{ state.selectedRodId = r.id; renderUI(); });
+  state.rods_inventory.forEach(r=>{
+    const el = document.createElement("div"); el.className = "rod" + (state.selected_rod_id===r.id ? " active":"");
+    el.innerHTML = `<div style="font-weight:700">${r.name}</div><div class="small">Lv ${r.level}</div><div class="small">${r.status}</div>`;
+    el.addEventListener("click", ()=>{ state.selected_rod_id = r.id; renderUI(); });
     rl.appendChild(el);
   });
   // inventory
   const inv = document.getElementById("inventory"); inv.innerHTML="";
-  state.fishInventory.forEach(f=>{
-    const e = document.createElement("div");
-    e.className = "rod";
-    e.style.minWidth = "160px";
-    e.innerHTML = `<div style="font-weight:700">${f.name}</div><div class="small">${f.weight} kg — ${f.price} Xu</div><div style="margin-top:6px;display:flex;gap:6px"><button class="btn secondary" onclick="sellSingle('${f.id}')">Bán</button></div>`;
+  state.fish_inventory.forEach(f=>{
+    const e = document.createElement("div"); e.className = "rod"; e.style.minWidth="150px";
+    e.innerHTML = `<div style="font-weight:700">${f.name}</div><div class="small">${f.weight} kg — ${f.exp} EXP</div><div style="margin-top:6px"><button class="btn secondary" onclick="sellSingle('${f.id}')">Bán</button></div>`;
     inv.appendChild(e);
   });
-  document.getElementById("fishSummary").textContent = `${state.fishInventory.length} con (${state.fishInventory.reduce((s,x)=>s+x.weight,0).toFixed(2)} kg)`;
+  document.getElementById("fishSummary").textContent = `${state.fish_inventory.length} con (${state.fish_inventory.reduce((s,x)=>s+x.weight,0).toFixed(2)} kg)`;
   resizeCanvas();
+}
+
+/* ---------- Actions (UI buttons) ---------- */
+document.getElementById("btnCastAll").addEventListener("click", ()=>{ state.rods_inventory.forEach(r=>{ if(r.status==="Trống"){ r.status="Đang Cắm"; r.cast_time = nowSec(); r.cast_start = nowSec(); r.last_check_time = nowSec(); r.location = "Khu Đồng Lớn"; r.channel = "Kênh A"; } }); renderUI(); save_game(); showMessage("Đã cắm tất cả cần trống"); });
+document.getElementById("btnCollectAll").addEventListener("click", ()=>{ state.rods_inventory.forEach(r=>{ if(r.status && r.status.startsWith("Đã Dính")){ if(r.catch_data){ state.fish_inventory.push(r.catch_data); r.catch_data=null; } r.status="Trống"; } }); renderUI(); save_game(); showMessage("Thu tất cả"); });
+
+document.getElementById("btnUpgrade").addEventListener("click", ()=>{ if(state.selected_rod_id===null) return showMessage("Chọn cần để nâng cấp"); upgrade_rod(state.selected_rod_id); renderUI(); });
+document.getElementById("btnBuyRod").addEventListener("click", ()=>{ const price = CONFIG.ROD_TEMPLATES["Cần Sắt"].buy_price; if(!price) return showMessage("Loại không bán"); if(state.player_coins < price) return showMessage("Không đủ Xu"); if(state.rods_inventory.length >= CONFIG.MAX_RODS) return showMessage("Đã đạt giới hạn cần"); const id = state.rods_inventory.reduce((m,r)=>Math.max(m,r.id),-1)+1; const nr = create_default_rod(id,"Cần Sắt"); state.rods_inventory.push(nr); state.player_coins -= price; save_game(); renderUI(); showMessage("Mua Cần Sắt thành công"); });
+
+document.getElementById("btnRentMarket").addEventListener("click", ()=>{ if(state.player_coins < CONFIG.MARKET_SLOT_COST) return showMessage("Không đủ Xu"); state.player_coins -= CONFIG.MARKET_SLOT_COST; state.market_slot_end_time = nowSec() + CONFIG.MARKET_SLOT_DURATION; save_game(); renderUI(); showMessage("Đã thuê chỗ chợ"); });
+document.getElementById("btnGoMarket").addEventListener("click", ()=>{ if(state.market_slot_end_time <= nowSec()) return showMessage("Bạn chưa thuê chỗ"); // open simple market modal
+  openMarketSell(); });
+
+document.getElementById("btnExchangeChristmas").addEventListener("click", ()=>{ if(can_exchange_christmas_gift()) exchange_christmas_gift(); else showMessage("Không đủ điều kiện đổi quà"); });
+
+document.getElementById("btnMainMenu").addEventListener("click", ()=>{ state.game_state = "MAIN_MENU"; renderUI(); });
+document.getElementById("btnInventory").addEventListener("click", ()=>{ state.game_state = "INVENTORY_SCREEN"; renderUI(); });
+document.getElementById("btnMarket").addEventListener("click", ()=>{ state.game_state = "MARKET_MENU"; renderUI(); });
+
+/* Sell single fish helper */
+function sellSingle(id){
+  const idx = state.fish_inventory.findIndex(f=>f.id===id);
+  if(idx===-1) return showMessage("Không tìm thấy");
+  const f = state.fish_inventory[idx];
+  const price = Math.round((CONFIG.FISH_PRICE_PER_KG[f.name]||100) * f.weight);
+  state.player_coins += price;
+  state.fish_inventory.splice(idx,1);
+  save_game(); renderUI(); showMessage(`Đã bán ${f.name} - ${price} Xu`);
+}
+
+/* Market Sell UI (simple modal) */
+function openMarketSell(){
+  prepare_fish_inventory_ids();
+  const popup = document.getElementById("popup");
+  popup.style.display = "block";
+  popup.innerHTML = `<h3 style="margin:0 0 8px 0">Bày bán tại chợ</h3>
+    <div class="small">Chọn cá >=1kg để bày bán</div>
+    <div id="marketList" style="max-height:220px;overflow:auto;margin-top:8px"></div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="marketDone">Hoàn tất</button><button class="btn secondary" id="marketClose">Đóng</button></div>`;
+  const list = document.getElementById("marketList");
+  const avail = state.fish_inventory.filter(f=> f.weight >= 1.0 && !state.market_selling_fish.some(m=>m.id===f.id));
+  if(avail.length===0) list.innerHTML = `<div class="small">Không có cá đủ điều kiện</div>`;
+  else avail.forEach(f=>{ const el = document.createElement("div"); el.className="rod"; el.style.minWidth="100%"; el.innerHTML = `<div style="font-weight:700">${f.name} ${f.weight}kg</div><div class="small">Giá thương lái ${(CONFIG.FISH_PRICE_PER_KG[f.name]||100)} /kg</div><div style="margin-top:6px"><button class="btn" onclick="addToMarket('${f.id}')">Bày bán</button></div>`; list.appendChild(el); });
+  document.getElementById("marketDone").onclick = ()=>{ popup.style.display='none'; renderUI(); save_game(); };
+  document.getElementById("marketClose").onclick = ()=>{ popup.style.display='none'; };
+}
+
+function addToMarket(fishId){
+  const idx = state.fish_inventory.findIndex(f=>f.id===fishId);
+  if(idx===-1) return showMessage("Không tìm thấy");
+  const f = state.fish_inventory[idx];
+  state.market_selling_fish.push({...f});
+  showMessage("Đã bày " + f.name);
+  renderUI();
+}
+
+/* ---------- Loop & periodic updates (mimic update_online_status) ---------- */
+function periodicTick(){
+  // hp regen simplified
+  // check each rod for fishing
+  state.rods_inventory.forEach(r=>{ check_fishing_for_rod(r); });
+  // events
+  check_event_status();
+  // market customer
+  if(state.game_state === "MARKET_SELL" || state.market_slot_end_time > nowSec()) check_for_customer();
+  // check christmas event auto
+  check_christmas_event_status();
+  renderUI();
   drawScene();
 }
 
-/* ---------- POPUPS & MESSAGES ---------- */
-function showMessage(txt,timeout=2500){
-  const el = document.getElementById("message");
-  el.textContent = txt; el.style.opacity = "1";
-  setTimeout(()=>{ el.style.opacity = "0"; }, timeout);
-}
-function showPopupCatch(fish){
-  const popup = document.getElementById("popup");
-  popup.style.display = "block";
-  popup.innerHTML = `<h3>Đã bắt được ${fish.name}</h3>
-    <div>Trọng lượng: <b>${fish.weight} kg</b></div>
-    <div>Giá thị trường: <b>${fish.price} Xu</b></div>
-    <div style="margin-top:8px;display:flex;gap:6px">
-      <button class="btn" onclick="sellById('${fish.id}')">Bán luôn</button>
-      <button class="btn secondary" onclick="closePopup()">Giữ</button>
-    </div>`;
-  setTimeout(()=>{ popup.style.display="none"; }, 6000);
-}
-function closePopup(){ document.getElementById("popup").style.display="none"; }
-
-/* ---------- ACTIONS ---------- */
-document.getElementById("btnCast").addEventListener("click", ()=>{
-  const rod = state.rods.find(r=>r.id===state.selectedRodId);
-  if(!rod) return showMessage("Chọn cần trước");
-  tryStartCast(rod);
-  renderUI();
-  saveState();
-});
-document.getElementById("btnCollect").addEventListener("click", ()=>{
-  const rod = state.rods.find(r=>r.id===state.selectedRodId);
-  if(!rod) return;
-  collectRod(rod);
-  renderUI();
-});
-document.getElementById("btnUpgrade").addEventListener("click", ()=>{
-  const rod = state.rods.find(r=>r.id===state.selectedRodId);
-  if(!rod) return;
-  const template = CONFIG.rodTemplates[rod.templateIdx];
-  const cost = Math.round(template.baseCost * Math.pow(CONFIG.upgradeMultiplier, rod.level-1));
-  if(state.coins < cost) return showMessage(`Cần ${cost} Xu để nâng cấp`);
-  state.coins -= cost; rod.level++; rod.totalBonusRate = (rod.totalBonusRate||0) + 0.002; rod.totalBonusTime = (rod.totalBonusTime||0)+1;
-  showMessage(`Nâng cấp thành công Lv ${rod.level}`);
-  renderUI(); saveState();
-});
-document.getElementById("btnBuy").addEventListener("click", ()=>{
-  const price = CONFIG.rodTemplates[1].buyPrice;
-  if(state.coins < price) return showMessage("Không đủ Xu");
-  if(state.rods.length >= CONFIG.maxRods) return showMessage("Đã đạt tối đa cần");
-  state.coins -= price;
-  const id = state.rods.length? Math.max(...state.rods.map(r=>r.id))+1 : 0;
-  state.rods.push(createDefaultRod(id,1));
-  showMessage("Đã mua Cần Sắt");
-  renderUI(); saveState();
-});
-document.getElementById("btnSell").addEventListener("click", ()=>{
-  // sell all for merchant price (slightly lower)
-  if(state.fishInventory.length===0) return showMessage("Không có cá để bán");
-  const total = state.fishInventory.reduce((s,f)=>s + Math.round(f.price*0.9),0);
-  state.coins += total;
-  const sold = state.fishInventory.length;
-  state.fishInventory=[];
-  showMessage(`Đã bán ${sold} con, nhận ${total} Xu`);
-  renderUI(); saveState();
-});
-document.getElementById("btnToggleDay").addEventListener("click", ()=>{ state.isDay = !state.isDay; renderUI(); saveState(); });
-
-document.getElementById("btnSave").addEventListener("click", ()=> saveState());
-document.getElementById("btnLoad").addEventListener("click", ()=> loadState());
-
-function sellSingle(id){
-  const idx = state.fishInventory.findIndex(f=>f.id===id);
-  if(idx===-1) return showMessage("Không tìm thấy");
-  const f = state.fishInventory[idx];
-  state.coins += f.price;
-  state.fishInventory.splice(idx,1);
-  showMessage(`Đã bán ${f.name} - ${f.price} Xu`);
-  renderUI(); saveState();
-}
-function sellById(id){
-  sellSingle(id);
-  closePopup();
-}
-
-/* ---------- GAME LOOP ---------- */
-let lastTick = 0;
-function loop(ts){
-  if(!lastTick) lastTick = ts || performance.now();
-  const dt = (ts || performance.now()) - lastTick;
-  lastTick = ts || performance.now();
-
-  // periodic checks
-  tryStartAutoEvent(dt);
-  forceCheckAll();
-  renderUI();
-
-  requestAnimationFrame(loop);
-}
-function tryStartAutoEvent(dt){
-  // random event: every ~2 minutes chance
-  if(!state._eventTimer) state._eventTimer = 0;
-  state._eventTimer += dt;
-  if(!state.event && state._eventTimer > 60000){ // check every 60s
-    state._eventTimer = 0;
-    if(Math.random() < 0.12){
-      state.event = {name:"Ngày Hội EXP", type:"boost_exp", duration:5*60*1000, start:Date.now()};
-      showMessage("SỰ KIỆN: Ngày Hội EXP (5 phút)");
-      setTimeout(()=>{ state.event = null; }, 5*60*1000);
-    }
+/* ---------- Market accept/reject hooks - show simple modal when customer appears ---------- */
+setInterval(()=>{
+  if(state.market_customer){
+    // popup offer
+    const p = document.getElementById("popup");
+    p.style.display='block';
+    p.innerHTML = `<h3>Khách: ${state.market_customer.name}</h3>
+      <div class="small">Đề nghị ${state.market_customer.offer} Xu cho ${state.market_customer.fish_name} (${state.market_customer.fish_weight} kg)</div>
+      <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" onclick="accept_market_offer();document.getElementById('popup').style.display='none'">Đồng ý</button><button class="btn secondary" onclick="reject_market_offer();document.getElementById('popup').style.display='none'">Từ chối</button></div>`;
   }
-}
+}, 2000);
 
-/* ---------- START ---------- */
-init();
-
-/* ---------- Extras: keyboard shortcuts ---------- */
+/* ---------- Small keyboard shortcuts ---------- */
 window.addEventListener("keydown", e=>{
-  if(e.key==='c') document.getElementById("btnCast").click();
-  if(e.key==='x') document.getElementById("btnCollect").click();
+  if(e.key==='c') document.getElementById("btnCastAll").click();
+  if(e.key==='x') document.getElementById("btnCollectAll").click();
 });
-</script>
 
+/* ---------- Start ---------- */
+function start(){
+  load_game();
+  if(!state.rods_inventory || state.rods_inventory.length===0) initDefaults();
+  // set selected rod default
+  state.selected_rod_id = state.rods_inventory.length? state.rods_inventory[0].id : null;
+  renderUI();
+  resizeCanvas();
+  // run periodic tick every second (approx behavior of file's online check)
+  setInterval(periodicTick, 1000);
+  // autosave every 20s
+  setInterval(save_game, 20000);
+}
+start();
+</script>
 </body>
 </html>
