@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cắm Câu Cá Lóc - Phiên bản Hoàn Chỉnh</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        :root {
+            --primary-color: #ffc800;
+            --secondary-color: #0046a0;
+            --danger-color: #c80000;
+            --success-color: #0a640a;
+            --warning-color: #b4b400;
+            --christmas-color: #ff0000;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a640a, #1e7c1e, #2a8a2a);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 10px;
+        }
+        
+        #game-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            min-height: 90vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--success-color));
+            z-index: 10;
+        }
+        
+        .screen {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .active {
+            display: block !important;
+        }
+        
+        h1, h2, h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            font-size: 24px;
+            background: linear-gradient(45deg, var(--primary-color), #ffeb3b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: rgba(50, 50, 50, 0.9);
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+        
+        .stat-item::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 10%;
+            height: 80%;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-item:last-child::after {
+            display: none;
+        }
+        
+        .button {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            margin: 12px 0;
+            background: var(--primary-color);
+            color: black;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .button:hover::before {
+            left: 100%;
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .button.red {
+            background: linear-gradient(45deg, var(--danger-color), #ff4444);
+            color: white;
+        }
+        
+        .button.blue {
+            background: linear-gradient(45deg, var(--secondary-color), #0066cc);
+            color: white;
+        }
+        
+        .button.green {
+            background: linear-gradient(45deg, var(--success-color), #2a8a2a);
+            color: white;
+        }
+        
+        .button.market {
+            background: linear-gradient(45deg, var(--warning-color), #d4d400);
+            color: white;
+        }
+        
+        .button.christmas {
+            background: linear-gradient(45deg, var(--christmas-color), #ff4444);
+            color: white;
+            animation: glow 2s infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px var(--christmas-color); }
+            50% { box-shadow: 0 0 20px var(--christmas-color); }
+        }
+        
+        .button.premium {
+            background: linear-gradient(45deg, #ffd700, #ff6b00);
+            color: black;
+            border: 2px solid #ffd700;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(100, 100, 100, 0.5);
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .hp-bar .progress-fill {
+            background: linear-gradient(90deg, #ff0000, #ff6b6b);
+        }
+        
+        .exp-bar .progress-fill {
+            background: linear-gradient(90deg, #00ffff, #00b3b3);
+        }
+        
+        .energy-bar .progress-fill {
+            background: linear-gradient(90deg, #ffeb3b, #ffc400);
+        }
+        
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            width: 85%;
+            max-width: 350px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--primary-color);
+            animation: popIn 0.3s ease;
+        }
+        
+        @keyframes popIn {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        
+        .message.active {
+            display: block;
+        }
+        
+        .back-button {
+            margin-top: 25px;
+            background: rgba(100, 100, 100, 0.7) !important;
+        }
+        
+        .inventory-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 8px 0;
+            background: rgba(50, 50, 50, 0.6);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .inventory-item:hover {
+            background: rgba(70, 70, 70, 0.8);
+            transform: translateX(5px);
+        }
+        
+        .rod-item {
+            background: rgba(0, 70, 160, 0.3);
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .fish-item {
+            background: rgba(10, 100, 10, 0.3);
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .premium-item {
+            background: rgba(255, 215, 0, 0.2);
+            border-left: 4px solid #ffd700;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            background: var(--primary-color);
+            color: black;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
+        .badge.premium {
+            background: #ffd700;
+        }
+        
+        .badge.new {
+            background: var(--danger-color);
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .event-banner {
+            background: linear-gradient(45deg, var(--christmas-color), #ff6b6b);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .achievement {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .fishing-slot {
+            background: rgba(0, 70, 160, 0.4);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .fishing-slot:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        .location-slot {
+            background: rgba(0, 70, 160, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .location-slot:hover {
+            background: rgba(0, 70, 160, 0.7);
+            transform: scale(1.02);
+        }
+        
+        .upgrade-option {
+            background: rgba(50, 50, 50, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .timer {
+            font-size: 12px;
+            color: #ffeb3b;
+            font-weight: bold;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .floating-coin {
+            position: absolute;
+            animation: float 1s ease-out;
+            font-size: 20px;
+            color: #ffd700;
+            font-weight: bold;
+            pointer-events: none;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+        
+        .shop-item {
+            background: rgba(50, 50, 50, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .skill-item {
+            background: rgba(0, 70, 160, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Thông báo nổi -->
+        <div id="notification" class="notification"></div>
+        
+        <!-- Màn hình chính -->
+        <div id="main-menu" class="screen active">
+            <h1>🎣 CẮM CÂU CÁ LÓC 🎣</h1>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>⭐ Cấp: <span id="player-level">1</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>💰 Xu: <span id="player-coins">1500</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>❤️ HP: <span id="player-hp">100</span>/100</div>
+                </div>
+            </div>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>⚡ Năng lượng: <span id="player-energy">50</span>/50</div>
+                </div>
+                <div class="stat-item">
+                    <div>🏆 Điểm: <span id="player-points">0</span></div>
+                </div>
+            </div>
+            
+            <!-- Banner sự kiện -->
+            <div id="event-banner" class="event-banner" style="display: none;">
+                🎉 SỰ KIỆN ĐANG DIỄN RA! 🎉
+            </div>
+            
+            <button class="button blue" onclick="showScreen('character-screen')">
+                👤 THÔNG TIN NHÂN VẬT
+            </button>
+            <button class="button" onclick="showScreen('inventory-screen')">
+                🎒 TÚI ĐỒ & SHOP
+            </button>
+            <button class="button green" onclick="showScreen('select-location')">
+                🎯 ĐI CẮM CÂU
+            </button>
+            <button class="button red" onclick="showScreen('steal-menu')">
+                🕵️ THĂM TRỘM CẦN <span class="badge">-20 HP</span>
+            </button>
+            <button class="button market" onclick="showScreen('market-screen')">
+                🏪 CHỢ CÁ <span class="badge new">MỚI</span>
+            </button>
+            <button class="button christmas" onclick="showScreen('events-screen')">
+                🎄 SỰ KIỆN <span class="badge">HOT</span>
+            </button>
+            <button class="button premium" onclick="showScreen('achievements-screen')">
+                🏆 THÀNH TỰU
+            </button>
+        </div>
+        
+        <!-- Màn hình thông tin nhân vật -->
+        <div id="character-screen" class="screen">
+            <h1>👤 THÔNG TIN NHÂN VẬT</h1>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>Tên: <span id="char-name">Ngư Phủ Làng Chài</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>Cấp: <span id="char-level">1</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>Xu: <span id="char-coins">1500</span></div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <div>HP: <span id="char-hp">100</span>/100</div>
+                <div class="progress-bar hp-bar">
+                    <div class="progress-fill" id="char-hp-fill" style="width: 100%"></div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <div>EXP: <span id="char-exp">0</span>/<span id="char-exp-needed">100</span></div>
+                <div class="progress-bar exp-bar">
+                    <div class="progress-fill" id="char-exp-fill" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <div>⚡ Năng lượng: <span id="char-energy">50</span>/50</div>
+                <div class="progress-bar energy-bar">
+                    <div class="progress-fill" id="char-energy-fill" style="width: 100%"></div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <div>Cá đã bắt: <span id="fish-caught">0</span> con (<span id="fish-weight">0.00</span> kg)</div>
+                <div>Cá lớn nhất: <span id="biggest-fish">0.00</span> kg</div>
+            </div>
+            
+            <h3>🎯 KỸ NĂNG</h3>
+            <div class="skill-item">
+                <div>🎣 Kỹ năng câu cá: <span id="skill-fishing">1</span></div>
+                <button class="button" onclick="upgradeSkill('fishing')">Nâng cấp (100💰)</button>
+            </div>
+            <div class="skill-item">
+                <div>🍀 May mắn: <span id="skill-luck">1</span></div>
+                <button class="button" onclick="upgradeSkill('luck')">Nâng cấp (100💰)</button>
+            </div>
+            <div class="skill-item">
+                <div>💪 Sức chịu đựng: <span id="skill-endurance">1</span></div>
+                <button class="button" onclick="upgradeSkill('endurance')">Nâng cấp (100💰)</button>
+            </div>
+            
+            <button class="button back-button" onclick="showScreen('main-menu')">← Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình túi đồ -->
+        <div id="inventory-screen" class="screen">
+            <h1>🎒 TÚI ĐỒ & SHOP</h1>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>Cần câu: <span id="inventory-rods-count">2</span>/<span id="inventory-max-rods">5</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>Xu: <span id="inventory-coins">1500</span></div>
+                </div>
+            </div>
+            
+            <h3>🎣 CẦN CÂU CỦA BẠN</h3>
+            <div id="rods-container">
+                <!-- Cần câu sẽ được hiển thị ở đây -->
+            </div>
+            
+            <h3>🐟 CÁ TRONG KHO</h3>
+            <div id="fish-container">
+                <!-- Cá sẽ được hiển thị ở đây -->
+            </div>
+            
+            <button class="button green" onclick="showScreen('shop-screen')">🛒 CỬA HÀNG</button>
+            <button class="button red" onclick="showScreen('sell-fish-screen')">💰 BÁN CÁ</button>
+            
+            <button class="button back-button" onclick="showScreen('main-menu')">← Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình cửa hàng -->
+        <div id="shop-screen" class="screen">
+            <h1>🛒 CỬA HÀNG</h1>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>Xu hiện tại: <span id="shop-coins">1500</span></div>
+                </div>
+            </div>
+            
+            <h3>🎣 CẦN CÂU</h3>
+            <div class="shop-item">
+                <div><strong>Cần Sắt</strong> - Tăng 20% tỷ lệ bắt cá</div>
+                <div>Giá: 10,000💰</div>
+                <button class="button" onclick="buyRod('iron')">MUA NGAY</button>
+            </div>
+            
+            <div class="shop-item">
+                <div><strong>Cần Vàng</strong> - Tăng 50% tỷ lệ bắt cá <span class="badge premium">PREMIUM</span></div>
+                <div>Giá: 50,000💰</div>
+                <button class="button premium" onclick="buyRod('gold')">MUA NGAY</button>
+            </div>
+            
+            <h3>⚡ NÂNG CẤP</h3>
+            <div class="shop-item">
+                <div><strong>Mở rộng giới hạn cần câu</strong></div>
+                <div>Hiện tại: <span id="current-rod-limit">5</span> cần</div>
+                <div>Giá: 50,000💰</div>
+                <button class="button blue" onclick="upgradeRodLimit()">NÂNG CẤP</button>
+            </div>
+            
+            <button class="button back-button" onclick="showScreen('inventory-screen')">← Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình bán cá -->
+        <div id="sell-fish-screen" class="screen">
+            <h1>💰 BÁN CÁ</h1>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>Xu hiện tại: <span id="sell-coins">1500</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>Tổng giá trị: <span id="total-fish-value">0</span>💰</div>
+                </div>
+            </div>
+            
+            <div style="margin: 15px 0;">
+                <div>Giá bán Cá Lóc: 100💰/kg</div>
+            </div>
+            
+            <div id="sell-fish-container">
+                <!-- Cá để bán sẽ hiển thị ở đây -->
+            </div>
+            
+            <button class="button red" onclick="sellAllFish()">💰 BÁN TẤT CẢ CÁ</button>
+            
+            <button class="button back-button" onclick="showScreen('inventory-screen')">← Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình chọn khu vực -->
+        <div id="select-location" class="screen">
+            <h1>🎯 CHỌN KHU VỰC CẮM CÂU</h1>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div>Cấp hiện tại: <span id="location-level">1</span></div>
+                </div>
+            </div>
+            
+            <div class="location-slot active" onclick="selectLocation('Khu Đồng Lớn')">
+                <div><strong>Khu Đồng Lớn</strong></div>
+                <div>Tỷ lệ bắt cá: 70%</div>
+                <div>Cá thường: 0.5-3kg</div>
+                <div>Yêu cầu: Cấp 1</div>
+            </div>
+            
+            <div class="location-slot inactive" onclick="selectLocation('Khu Rừng Tràm')">
+                <div><strong>Khu Rừng Tràm</strong> <span class="badge new">MỚI</span></div>
+                <div>Tỷ lệ bắt cá: 50%</div>
+                <div>Cá lớn: 1-5kg</div>
+                <div>Yêu cầu: Cấp 7</div>
+            </div>
+            
+            <div class="location-slot inactive" onclick="selectLocation('Hồ Thiêng')">
+                <div><strong>Hồ Thiêng</strong> <span class="badge premium">PREMIUM</span></div>
+                <div>Tỷ lệ bắt cá: 30%</div>
+                <div>Cá khổng lồ: 3-10kg</div>
+                <div>Yêu cầu: Cấp 15</div>
+            </div>
+            
+            <button class="button back-button" onclick="showScreen('main-menu')">← Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình chọn kênh -->
+        <div id="select-channel" class="screen">
+            <h1 id="channel-location">KHU VỰC: Khu Đồng Lớn</h1>
+            <h2>📡 CHỌN KÊNH</h2>
+            
+            <div class="location-slot active" onclick="selectChannel('Kênh A')">
+                <div><strong>Kênh A</strong></div>
+                <div>Đông người câu</div>
+                <div>Tỷ lệ +5%</div>
+            </div>
+            
+            <div class="location-slot active" onclick="selectChannel('Kênh B')">
+                <div><strong>Kênh B</strong></div>
+                <div>Vắng vẻ</div>
+                <div>Cá lớn +10%</div>
+            </div>
+            
+            <div class="location-slot active" onclick="selectChannel('Kênh C')">
+                <div><strong>Kênh C</strong></div>
+                <div>Kênh cao cấp</div>
+                <div>EXP +15%</div>
+            </div>
+            
+            <button class="button back-button" onclick="showScreen('select-location')">← Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình câu cá -->
+        <div id="fishing-screen" class="screen">
+            <h1 id="fishing-location">Khu Đồng Lớn - Kênh A</h1>
+            
+            <div id="fishing-slots">
+                <div class="fishing-slot">
+                    <div style="font-weight: bold; margin-bottom: 10px;">🎣 Ô CẮM CÂU 1</div>
+                    <div id="slot-1-status">Trống</div>
+                    <button class="button" onclick="startFishing(0)">🎣 CẮM CÂU</button>
+                </div>
+                <div class="fishing-slot">
+                    <div style="font-weight: bold; margin-bottom: 10px;">🎣 Ô CẮM CÂU 2</div>
+                    <div id="slot-2-status">Trống</div>
+                    <button class="button" onclick="startFishing(1)">🎣 CẮM CÂU</button>
+                </div>
+            </div>
+            
+            <div class="stats-bar" style="margin-top: 15px;">
+                <div class="stat-item">
+                    <div>Cần Trống: <span id="free-rods">2</span>/<span id="fishing-max-rods">5</span></div>
+                </div>
+                <div class="stat-item">
+                    <div>Cá đã bắt: <span id="fishing-fish-count">0</span> con</div>
+                </div>
+            </div>
+            
+            <button class="button back-button" onclick="showScreen('select-channel')">← Quay Lại Kênh</button>
+        </div>
+        
+        <!-- Màn hình thăm trộm -->
+        <div id="steal-menu" class="screen">
+            <h1>🕵️ THĂM TRỘM CẦN</h1>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <div style="font-size: 18px; margin-bottom: 15px;">Hành động này tốn 20 HP. Bạn có chắc muốn đi luôn không?</div>
+                <div style="font-size: 16px;">HP hiện tại: <span id="steal-hp">100</span>/100</div>
+            </div>
+            
+            <button class="button red" onclick="startStealing()">🕵️ ĐI LUÔN</button>
+            <button class="button blue back-button" onclick="showScreen('main-menu')">🤔 SUY NGHĨ LẠI</button>
+        </div>
+        
+        <!-- Màn hình chợ cá -->
+        <div id="market-screen" class="screen">
+            <h1>🏪 CHỢ CÁ</h1>
+            <div style="text-align: center; margin: 20px 0;">
+                <p>Tính năng đang được phát triển...</p>
+                <p>👨‍💻 Sắp ra mắt!</p>
+            </div>
+            <button class="button back-button" onclick="showScreen('main-menu')">← Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình sự kiện -->
+        <div id="events-screen" class="screen">
+            <h1>🎄 SỰ KIỆN</h1>
+            <div style="text-align: center; margin: 20px 0;">
+                <p>Tính năng đang được phát triển...</p>
+                <p>👨‍💻 Sắp ra mắt!</p>
+            </div>
+            <button class="button back-button" onclick="showScreen('main-menu')">← Quay Lại</button>
+        </div>
+        
+        <!-- Màn hình thành tựu -->
+        <div id="achievements-screen" class="screen">
+            <h1>🏆 THÀNH TỰU</h1>
+            <div style="text-align: center; margin: 20px 0;">
+                <p>Tính năng đang được phát triển...</p>
+                <p>👨‍💻 Sắp ra mắt!</p>
+            </div>
+            <button class="button back-button" onclick="showScreen('main-menu')">← Quay Lại</button>
+        </div>
+    </div>
+    
+    <!-- Thông báo -->
+    <div id="message" class="message">
+        <div id="message-text">Thông báo</div>
+    </div>
+
+    <script>
+        // ========== DỮ LIỆU TRÒ CHƠI NÂNG CẤP ==========
+        let gameState = {
+            currentScreen: "main-menu",
+            currentLocation: null,
+            currentChannel: null,
+            lastFishingTime: 0,
+            lastEnergyRegen: Date.now(),
+            activeEvents: [],
+            achievements: [],
+            dailyRewards: {},
+            fishingSlots: [
+                { id: 0, status: "Trống", rodId: null, endTime: 0 },
+                { id: 1, status: "Trống", rodId: null, endTime: 0 }
+            ]
+        };
+
+        let playerData = {
+            level: 1,
+            exp: 0,
+            coins: 1500,
+            gems: 0,
+            health: 100,
+            maxHealth: 100,
+            energy: 50,
+            maxEnergy: 50,
+            points: 0,
+            fishInventory: [],
+            rodsInventory: [
+                { 
+                    id: 1, 
+                    name: "Cần Tre", 
+                    level: 1, 
+                    status: "Trống",
+                    rarity: "common",
+                    speed: 1.0,
+                    luck: 1.0,
+                    type: "bamboo"
+                },
+                { 
+                    id: 2, 
+                    name: "Cần Tre", 
+                    level: 1, 
+                    status: "Trống",
+                    rarity: "common",
+                    speed: 1.0,
+                    luck: 1.0,
+                    type: "bamboo"
+                }
+            ],
+            itemsInventory: [],
+            maxRods: 5,
+            skills: {
+                fishing: 1,
+                luck: 1,
+                endurance: 1
+            },
+            statistics: {
+                totalFishCaught: 0,
+                biggestFish: 0,
+                totalEarnings: 0,
+                playTime: 0
+            }
+        };
+
+        // ========== TÍNH NĂNG MỚI ==========
+
+        // Hệ thống năng lượng
+        function updateEnergy() {
+            const now = Date.now();
+            const timeDiff = now - gameState.lastEnergyRegen;
+            const energyGain = Math.floor(timeDiff / 60000); // 1 energy mỗi phút
+            
+            if (energyGain > 0) {
+                playerData.energy = Math.min(playerData.maxEnergy, playerData.energy + energyGain);
+                gameState.lastEnergyRegen = now;
+                
+                if (energyGain > 5) {
+                    showNotification(`⚡ Hồi phục ${energyGain} năng lượng!`);
+                }
+            }
+        }
+
+        // Hệ thống sự kiện
+        const events = {
+            doubleExp: {
+                name: "Double EXP",
+                description: "Nhận gấp đôi kinh nghiệm",
+                active: false,
+                multiplier: 2.0
+            },
+            luckyDay: {
+                name: "Ngày May Mắn",
+                description: "Tăng 50% tỷ lệ bắt cá hiếm",
+                active: false,
+                multiplier: 1.5
+            }
+        };
+
+        // Hệ thống thành tựu
+        const achievementsList = [
+            { id: 1, name: "Ngư phủ mới", description: "Bắt con cá đầu tiên", reward: 100, completed: false },
+            { id: 2, name: "Chuyên gia câu cá", description: "Bắt 100 con cá", reward: 500, completed: false },
+            { id: 3, name: "Tỷ phú", description: "Kiếm 10,000 xu", reward: 1000, completed: false }
+        ];
+
+        // ========== HÀM NÂNG CẤP ==========
+
+        function showNotification(message, duration = 3000) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, duration);
+        }
+
+        function createFloatingCoin(amount, element) {
+            const rect = element.getBoundingClientRect();
+            const floatingCoin = document.createElement('div');
+            floatingCoin.className = 'floating-coin';
+            floatingCoin.textContent = `+${amount}💰`;
+            floatingCoin.style.left = (rect.left + rect.width/2) + 'px';
+            floatingCoin.style.top = rect.top + 'px';
+            
+            document.body.appendChild(floatingCoin);
+            
+            setTimeout(() => {
+                floatingCoin.remove();
+            }, 1000);
+        }
+
+        // Hệ thống câu cá cải tiến
+        function startFishing(slotIndex) {
+            if (playerData.energy < 10) {
+                showNotification("⚠️ Không đủ năng lượng!");
+                return;
+            }
+
+            const freeRod = playerData.rodsInventory.find(rod => rod.status === "Trống");
+            if (!freeRod) {
+                showNotification("🎣 Không có cần câu trống!");
+                return;
+            }
+
+            playerData.energy -= 10;
+            freeRod.status = "Đang câu";
+            gameState.fishingSlots[slotIndex].status = "Đang câu";
+            gameState.fishingSlots[slotIndex].rodId = freeRod.id;
+            gameState.fishingSlots[slotIndex].endTime = Date.now() + 5000; // 5 giây
+
+            showNotification("🎣 Đã thả cần... đang chờ cá cắn câu!", 2);
+            updateUI();
+
+            // Mô phỏng thời gian câu cá
+            setTimeout(() => {
+                finishFishing(slotIndex, freeRod);
+            }, 5000);
+        }
+
+        function finishFishing(slotIndex, rod) {
+            // Tính toán tỷ lệ thành công
+            const baseSuccessRate = 0.7;
+            const levelBonus = playerData.level * 0.02;
+            const skillBonus = playerData.skills.fishing * 0.05;
+            const rodBonus = rod.luck;
+            
+            const successRate = Math.min(0.95, baseSuccessRate + levelBonus + skillBonus + rodBonus);
+            
+            if (Math.random() < successRate) {
+                // Tính trọng lượng cá
+                const baseWeight = 0.5;
+                const randomFactor = Math.random() * 3;
+                const luckBonus = playerData.skills.luck * 0.1;
+                const weight = baseWeight + randomFactor + luckBonus;
+                
+                // Tính EXP
+                let expGained = Math.floor(weight * 20);
+                
+                // Áp dụng sự kiện double EXP
+                if (events.doubleExp.active) {
+                    expGained *= events.doubleExp.multiplier;
+                }
+                
+                // Thêm cá vào kho
+                const fish = {
+                    name: "Cá Lóc",
+                    weight: parseFloat(weight.toFixed(2)),
+                    exp: expGained,
+                    value: Math.floor(weight * 100),
+                    rarity: weight > 3 ? "rare" : "common"
+                };
+                
+                playerData.fishInventory.push(fish);
+                
+                // Thêm EXP và kiểm tra level up
+                playerData.exp += expGained;
+                checkLevelUp();
+                
+                // Cập nhật thống kê
+                playerData.statistics.totalFishCaught++;
+                if (weight > playerData.statistics.biggestFish) {
+                    playerData.statistics.biggestFish = weight;
+                }
+                
+                // Thông báo thành công
+                const rarityText = weight > 3 ? " 🎉 HIẾM!" : "";
+                showNotification(`🎣 Bắt được cá Lóc ${weight.toFixed(2)}kg! +${expGained} EXP${rarityText}`);
+                
+            } else {
+                showNotification("💨 Cá thoát mất rồi!");
+            }
+            
+            // Reset trạng thái
+            rod.status = "Trống";
+            gameState.fishingSlots[slotIndex].status = "Trống";
+            gameState.fishingSlots[slotIndex].rodId = null;
+            
+            updateUI();
+        }
+
+        // Hệ thống nâng cấp skill
+        function upgradeSkill(skill) {
+            const upgradeCost = playerData.skills[skill] * 100;
+            
+            if (playerData.coins >= upgradeCost) {
+                playerData.coins -= upgradeCost;
+                playerData.skills[skill]++;
+                showNotification(`⭐ Nâng cấp ${skill} thành công!`);
+                updateUI();
+            } else {
+                showNotification(`💰 Cần ${upgradeCost} xu để nâng cấp`);
+            }
+        }
+
+        // Hệ thống mua cần câu
+        function buyRod(type) {
+            let cost, rod;
+            
+            switch(type) {
+                case 'iron':
+                    cost = 10000;
+                    rod = {
+                        id: playerData.rodsInventory.length + 1,
+                        name: "Cần Sắt",
+                        level: 1,
+                        status: "Trống",
+                        rarity: "uncommon",
+                        speed: 1.2,
+                        luck: 1.2,
+                        type: "iron"
+                    };
+                    break;
+                case 'gold':
+                    cost = 50000;
+                    rod = {
+                        id: playerData.rodsInventory.length + 1,
+                        name: "Cần Vàng",
+                        level: 1,
+                        status: "Trống",
+                        rarity: "rare",
+                        speed: 1.5,
+                        luck: 1.5,
+                        type: "gold"
+                    };
+                    break;
+                default:
+                    return;
+            }
+            
+            if (playerData.coins >= cost) {
+                if (playerData.rodsInventory.length < playerData.maxRods) {
+                    playerData.coins -= cost;
+                    playerData.rodsInventory.push(rod);
+                    showNotification(`🎣 Mua ${rod.name} thành công!`);
+                } else {
+                    showNotification("🎣 Đã đạt giới hạn số lượng cần câu!");
+                }
+            } else {
+                showNotification(`💰 Không đủ xu! Cần ${cost.toLocaleString()}💰`);
+            }
+            updateUI();
+        }
+
+        // Nâng cấp giới hạn cần câu
+        function upgradeRodLimit() {
+            const cost = 50000;
+            if (playerData.coins >= cost && playerData.maxRods < 10) {
+                playerData.coins -= cost;
+                playerData.maxRods++;
+                showNotification(`🎣 Nâng cấp thành công! Giới hạn: ${playerData.maxRods} cần`);
+            } else if (playerData.maxRods >= 10) {
+                showNotification("🎣 Đã đạt giới hạn tối đa!");
+            } else {
+                showNotification(`💰 Không đủ xu! Cần ${cost.toLocaleString()}💰`);
+            }
+            updateUI();
+        }
+
+        // Hệ thống bán cá
+        function sellAllFish() {
+            if (playerData.fishInventory.length === 0) {
+                showNotification("🐟 Không có cá để bán!");
+                return;
+            }
+            
+            const totalValue = playerData.fishInventory.reduce((sum, fish) => sum + fish.value, 0);
+            playerData.coins += totalValue;
+            playerData.statistics.totalEarnings += totalValue;
+            
+            showNotification(`💰 Bán thành công ${playerData.fishInventory.length} con cá! +${totalValue}💰`);
+            
+            playerData.fishInventory = [];
+            updateUI();
+        }
+
+        // Hệ thống thăm trộm
+        function startStealing() {
+            if (playerData.health >= 20) {
+                playerData.health -= 20;
+                
+                // 50% cơ hội bắt được cá
+                if (Math.random() > 0.5) {
+                    const weight = (Math.random() * 2 + 0.5).toFixed(2);
+                    const value = Math.floor(weight * 80); // Giá thấp hơn
+                    
+                    playerData.fishInventory.push({
+                        name: "Cá Trộm",
+                        weight: parseFloat(weight),
+                        exp: Math.floor(weight * 15),
+                        value: value,
+                        rarity: "stolen"
+                    });
+                    
+                    showNotification(`🕵️ Trộm thành công! Bắt được cá ${weight}kg! +${value}💰`);
+                } else {
+                    showNotification("🕵️ Trộm thất bại! Bị phát hiện!");
+                }
+                
+                showScreen("main-menu");
+            } else {
+                showNotification("⚠️ Không đủ HP để thăm trộm!");
+            }
+        }
+
+        // Chọn khu vực và kênh
+        function selectLocation(location) {
+            if (location === "Khu Đồng Lớn" || playerData.level >= 7) {
+                gameState.currentLocation = location;
+                document.getElementById("channel-location").textContent = `KHU VỰC: ${location}`;
+                showScreen("select-channel");
+            } else {
+                showNotification("🔒 Cần đạt cấp 7 để mở khóa khu vực này!");
+            }
+        }
+
+        function selectChannel(channel) {
+            gameState.currentChannel = channel;
+            document.getElementById("fishing-location").textContent = `${gameState.currentLocation} - ${channel}`;
+            showScreen("fishing-screen");
+        }
+
+        // Kiểm tra level up
+        function checkLevelUp() {
+            const expNeeded = calculateExpNeeded();
+            if (playerData.exp >= expNeeded) {
+                playerData.level++;
+                playerData.exp -= expNeeded;
+                playerData.maxHealth += 10;
+                playerData.health = playerData.maxHealth;
+                playerData.maxEnergy += 5;
+                playerData.energy = playerData.maxEnergy;
+                
+                showNotification(`🎉 CHÚC MỪNG! LÊN CẤP ${playerData.level}!`);
+            }
+        }
+
+        function calculateExpNeeded() {
+            return Math.floor(100 * Math.pow(playerData.level, 1.5));
+        }
+
+        // ========== HÀM HIỂN THỊ THÔNG BÁO ==========
+        function displayMessage(text, duration = 3000) {
+            const messageElement = document.getElementById("message");
+            const messageText = document.getElementById("message-text");
+            
+            messageText.innerHTML = text;
+            messageElement.classList.add("active");
+            
+            setTimeout(() => {
+                messageElement.classList.remove("active");
+            }, duration);
+        }
+
+        // ========== HÀM CHUYỂN MÀN HÌNH ==========
+        function showScreen(screenId) {
+            // Ẩn tất cả màn hình
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Hiển thị màn hình được chọn
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+                gameState.currentScreen = screenId;
+            }
+            
+            // Cập nhật UI
+            updateUI();
+        }
+
+        // ========== HÀM CẬP NHẬT GIAO DIỆN ==========
+        function updateUI() {
+            // Cập nhật năng lượng
+            updateEnergy();
+            
+            // Cập nhật thông tin người chơi chính
+            document.getElementById("player-level").textContent = playerData.level;
+            document.getElementById("player-coins").textContent = playerData.coins.toLocaleString();
+            document.getElementById("player-hp").textContent = playerData.health;
+            document.getElementById("player-energy").textContent = playerData.energy;
+            document.getElementById("player-points").textContent = playerData.points;
+            
+            // Cập nhật màn hình thông tin nhân vật
+            document.getElementById("char-level").textContent = playerData.level;
+            document.getElementById("char-coins").textContent = playerData.coins.toLocaleString();
+            document.getElementById("char-hp").textContent = playerData.health;
+            document.getElementById("char-energy").textContent = playerData.energy;
+            document.getElementById("steal-hp").textContent = playerData.health;
+            document.getElementById("location-level").textContent = playerData.level;
+            
+            // Cập nhật thanh HP và Energy
+            const hpPercent = (playerData.health / playerData.maxHealth) * 100;
+            document.getElementById("char-hp-fill").style.width = `${hpPercent}%`;
+            
+            const energyPercent = (playerData.energy / playerData.maxEnergy) * 100;
+            document.getElementById("char-energy-fill").style.width = `${energyPercent}%`;
+            
+            // Cập nhật thanh EXP
+            const expNeeded = calculateExpNeeded();
+            const expPercent = (playerData.exp / expNeeded) * 100;
+            document.getElementById("char-exp").textContent = playerData.exp.toLocaleString();
+            document.getElementById("char-exp-needed").textContent = expNeeded.toLocaleString();
+            document.getElementById("char-exp-fill").style.width = `${expPercent}%`;
+            
+            // Cập nhật thông tin cá
+            const fishCount = playerData.fishInventory.length;
+            const fishWeight = playerData.fishInventory.reduce((sum, fish) => sum + fish.weight, 0);
+            document.getElementById("fish-caught").textContent = fishCount;
+            document.getElementById("fish-weight").textContent = fishWeight.toFixed(2);
+            document.getElementById("fishing-fish-count").textContent = fishCount;
+            document.getElementById("biggest-fish").textContent = playerData.statistics.biggestFish.toFixed(2);
+            
+            // Cập nhật kỹ năng
+            document.getElementById("skill-fishing").textContent = playerData.skills.fishing;
+            document.getElementById("skill-luck").textContent = playerData.skills.luck;
+            document.getElementById("skill-endurance").textContent = playerData.skills.endurance;
+            
+            // Cập nhật thông tin cần câu
+            const freeRods = playerData.rodsInventory.filter(r => r.status === "Trống").length;
+            document.getElementById("inventory-rods-count").textContent = playerData.rodsInventory.length;
+            document.getElementById("inventory-max-rods").textContent = playerData.maxRods;
+            document.getElementById("free-rods").textContent = freeRods;
+            document.getElementById("fishing-max-rods").textContent = playerData.maxRods;
+            document.getElementById("current-rod-limit").textContent = playerData.maxRods;
+            
+            // Cập nhật cửa hàng
+            document.getElementById("shop-coins").textContent = playerData.coins.toLocaleString();
+            document.getElementById("inventory-coins").textContent = playerData.coins.toLocaleString();
+            document.getElementById("sell-coins").textContent = playerData.coins.toLocaleString();
+            
+            // Cập nhật tổng giá trị cá
+            const totalFishValue = playerData.fishInventory.reduce((sum, fish) => sum + fish.value, 0);
+            document.getElementById("total-fish-value").textContent = totalFishValue.toLocaleString();
+            
+            // Cập nhật danh sách cần câu
+            updateRodsList();
+            
+            // Cập nhật danh sách cá
+            updateFishList();
+            
+            // Cập nhật trạng thái ô câu cá
+            updateFishingSlots();
+            
+            // Kiểm tra và kích hoạt sự kiện ngẫu nhiên
+            checkRandomEvents();
+        }
+
+        function updateRodsList() {
+            const rodsContainer = document.getElementById("rods-container");
+            if (rodsContainer) {
+                rodsContainer.innerHTML = '';
+                
+                playerData.rodsInventory.forEach(rod => {
+                    const rodElement = document.createElement("div");
+                    rodElement.className = "inventory-item rod-item";
+                    
+                    let rarityBadge = "";
+                    if (rod.rarity === "uncommon") rarityBadge = '<span class="badge">UNCOMMON</span>';
+                    if (rod.rarity === "rare") rarityBadge = '<span class="badge premium">RARE</span>';
+                    
+                    rodElement.innerHTML = `
+                        <div>
+                            <strong>${rod.name}</strong> ${rarityBadge}
+                            <div style="font-size: 12px; color: #ccc;">
+                                Level ${rod.level} | May mắn: +${Math.floor((rod.luck-1)*100)}%
+                            </div>
+                        </div>
+                        <div>
+                            ${rod.status}
+                        </div>
+                    `;
+                    
+                    rodsContainer.appendChild(rodElement);
+                });
+            }
+        }
+
+        function updateFishList() {
+            const fishContainer = document.getElementById("fish-container");
+            const sellFishContainer = document.getElementById("sell-fish-container");
+            
+            if (fishContainer) {
+                fishContainer.innerHTML = '';
+                
+                if (playerData.fishInventory.length === 0) {
+                    fishContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #ccc;">Chưa có cá trong kho</div>';
+                } else {
+                    playerData.fishInventory.forEach((fish, index) => {
+                        const fishElement = document.createElement("div");
+                        fishElement.className = "inventory-item fish-item";
+                        
+                        let rarityText = "";
+                        if (fish.rarity === "rare") rarityText = '<span class="badge new">HIẾM</span>';
+                        if (fish.rarity === "stolen") rarityText = '<span class="badge">TRỘM</span>';
+                        
+                        fishElement.innerHTML = `
+                            <div>
+                                <strong>${fish.name}</strong> ${rarityText}
+                                <div style="font-size: 12px; color: #ccc;">
+                                    ${fish.weight} kg | Giá: ${fish.value}💰
+                                </div>
+                            </div>
+                        `;
+                        
+                        fishContainer.appendChild(fishElement);
+                    });
+                }
+            }
+            
+            if (sellFishContainer) {
+                sellFishContainer.innerHTML = '';
+                
+                if (playerData.fishInventory.length === 0) {
+                    sellFishContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #ccc;">Không có cá để bán</div>';
+                } else {
+                    const totalWeight = playerData.fishInventory.reduce((sum, fish) => sum + fish.weight, 0);
+                    const totalValue = playerData.fishInventory.reduce((sum, fish) => sum + fish.value, 0);
+                    
+                    sellFishContainer.innerHTML = `
+                        <div class="inventory-item">
+                            <div>
+                                <strong>Tổng cộng</strong>
+                                <div style="font-size: 12px; color: #ccc;">
+                                    ${playerData.fishInventory.length} con cá | ${totalWeight.toFixed(2)} kg
+                                </div>
+                            </div>
+                            <div>
+                                <strong>${totalValue}💰</strong>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function updateFishingSlots() {
+            gameState.fishingSlots.forEach((slot, index) => {
+                const slotElement = document.getElementById(`slot-${index+1}-status`);
+                if (slotElement) {
+                    if (slot.status === "Đang câu") {
+                        const timeLeft = Math.ceil((slot.endTime - Date.now()) / 1000);
+                        if (timeLeft > 0) {
+                            slotElement.innerHTML = `Đang câu... <span class="timer">${timeLeft}s</span>`;
+                        } else {
+                            slotElement.textContent = "Trống";
+                        }
+                    } else {
+                        slotElement.textContent = "Trống";
+                    }
+                }
+            });
+        }
+
+        function checkRandomEvents() {
+            // 5% cơ hội kích hoạt sự kiện mỗi lần update
+            if (Math.random() < 0.05 && gameState.activeEvents.length === 0) {
+                const eventKeys = Object.keys(events);
+                const randomEvent = eventKeys[Math.floor(Math.random() * eventKeys.length)];
+                
+                events[randomEvent].active = true;
+                gameState.activeEvents.push(randomEvent);
+                
+                // Hiển thị banner sự kiện
+                const eventBanner = document.getElementById('event-banner');
+                eventBanner.textContent = `🎉 ${events[randomEvent].name}: ${events[randomEvent].description}`;
+                eventBanner.style.display = 'block';
+                
+                showNotification(`🎉 Sự kiện ${events[randomEvent].name} đã bắt đầu!`);
+                
+                // Tự động tắt sự kiện sau 5 phút
+                setTimeout(() => {
+                    events[randomEvent].active = false;
+                    gameState.activeEvents = gameState.activeEvents.filter(e => e !== randomEvent);
+                    eventBanner.style.display = 'none';
+                    showNotification(`⏰ Sự kiện ${events[randomEvent].name} đã kết thúc`);
+                }, 300000); // 5 phút
+            }
+        }
+
+        // ========== KHỞI TẠO GAME ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("🎮 Game Cắm Câu Cá Lóc Hoàn Chỉnh đã khởi động!");
+            updateUI();
+            
+            // Hiển thị thông báo chào mừng
+            setTimeout(() => {
+                showNotification("🎣 Chào mừng đến với Cắm Câu Cá Lóc Premium!");
+            }, 1000);
+            
+            // Auto-save mỗi 30 giây
+            setInterval(saveGame, 30000);
+            
+            // Auto-update UI mỗi giây
+            setInterval(updateUI, 1000);
+            
+            // Cập nhật fishing slots mỗi giây
+            setInterval(updateFishingSlots, 1000);
+        });
+
+        // Hệ thống lưu game
+        function saveGame() {
+            const saveData = {
+                playerData: playerData,
+                gameState: gameState,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('fishingGameComplete', JSON.stringify(saveData));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('fishingGameComplete');
+            if (saved) {
+                const saveData = JSON.parse(saved);
+                playerData = { ...playerData, ...saveData.playerData };
+                gameState = { ...gameState, ...saveData.gameState };
+                showNotification("🔄 Đã tải game thành công!");
+                updateUI();
+            }
+        }
+
+        // Thêm hàm toàn cục để debug
+        window.debugGame = function() {
+            console.log("=== 🎮 DEBUG GAME ===");
+            console.log("Player Data:", playerData);
+            console.log("Game State:", gameState);
+            console.log("Active Events:", gameState.activeEvents);
+        }
+
+        // Tự động load game khi khởi động
+        loadGame();
+    </script>
+</body>
+</html>
