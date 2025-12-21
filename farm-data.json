@@ -1849,16 +1849,6 @@
       "worker": "Quân",
       "notes": "Chăm sóc nhanh cho nhiều liếp",
       "recordedAt": "2025-12-21T09:38:26.619Z"
-    },
-    {
-      "id": 17,
-      "date": "2025-12-13",
-      "bedId": 50,
-      "type": "spraying",
-      "details": "Phun thuốc: 30g bacillus thuringiensis + 40ml CY + 1L giấm rượu",
-      "worker": "Quân",
-      "notes": "Chăm sóc nhanh cho nhiều liếp",
-      "recordedAt": "2025-12-21T09:38:26.619Z"
     }
   ],
   "timeTracking": [],
