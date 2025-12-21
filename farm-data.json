@@ -983,12 +983,12 @@
       "id": 50,
       "areaId": 10,
       "bedNumber": 5,
-      "cropName": null,
-      "sowingDate": null,
-      "transplantDate": null,
-      "expectedHarvestDate": null,
+      "cropName": "Cải thìa",
+      "sowingDate": "2025-11-26",
+      "transplantDate": "2025-12-12",
+      "expectedHarvestDate": "2026-01-16",
       "actualHarvestDate": null,
-      "status": "empty",
+      "status": "growing",
       "notes": "",
       "lastWatered": null,
       "lastFertilized": null,
@@ -1587,6 +1587,14 @@
       "date": "2025-12-21",
       "type": "trồng mới",
       "details": "Trồng Cải thìa ở Dãy Phải - K2 - L4",
+      "worker": ""
+    },
+    {
+      "id": 11,
+      "bedId": 50,
+      "date": "2025-12-21",
+      "type": "trồng mới",
+      "details": "Trồng Cải thìa ở Dãy Phải - K2 - L5",
       "worker": ""
     }
   ],
