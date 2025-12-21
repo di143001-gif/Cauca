@@ -1119,12 +1119,12 @@
       "id": 58,
       "areaId": 12,
       "bedNumber": 3,
-      "cropName": null,
-      "sowingDate": null,
-      "transplantDate": null,
-      "expectedHarvestDate": null,
+      "cropName": "Cải ngọt",
+      "sowingDate": "2025-11-26",
+      "transplantDate": "2025-12-14",
+      "expectedHarvestDate": "2026-01-13",
       "actualHarvestDate": null,
-      "status": "empty",
+      "status": "growing",
       "notes": "",
       "lastWatered": null,
       "lastFertilized": null,
@@ -1627,6 +1627,14 @@
       "date": "2025-12-21",
       "type": "trồng mới",
       "details": "Trồng Cải ngọt ở Dãy Phải - K4 - L1",
+      "worker": ""
+    },
+    {
+      "id": 16,
+      "bedId": 58,
+      "date": "2025-12-21",
+      "type": "trồng mới",
+      "details": "Trồng Cải ngọt ở Dãy Phải - K4 - L3",
       "worker": ""
     }
   ],
