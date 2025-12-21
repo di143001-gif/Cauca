@@ -850,7 +850,7 @@
       "cropName": "Cải thìa",
       "sowingDate": "2025-11-26",
       "transplantDate": null,
-      "expectedHarvestDate": "2025-12-24",
+      "expectedHarvestDate": "2026-01-10",
       "actualHarvestDate": null,
       "status": "growing",
       "notes": "",
@@ -1537,11 +1537,11 @@
       "fromTransplant": 25
     },
     "Cải ngọt": {
-      "fromSeed": 30,
+      "fromSeed": 45,
       "fromTransplant": 30
     },
     "Cải thìa": {
-      "fromSeed": 28,
+      "fromSeed": 45,
       "fromTransplant": 35
     },
     "Cải ngồng": {
